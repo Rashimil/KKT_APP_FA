@@ -53,14 +53,19 @@ namespace KKT_APP_FA.Models.KKTRequest
             string clientINN = clientData.ClientINN;
             if (clientINN.Length > 12)
                 clientINN = clientINN.Substring(0, 12); // обрезка 
-            string cashierFIO = cashierData.CashierFIO;
-            if (cashierFIO.Length > 64)
-                cashierFIO = cashierFIO.Substring(0, 64); // обрезка 
-            string cashierINN = cashierData.CashierINN;
-            if (cashierINN.Length > 12)
-                cashierINN = cashierINN.Substring(0, 12); // обрезка 
-            if (cashierINN.Length < 12)
-                cashierINN = cashierINN.PadLeft(12, ' '); // добивка пробелами до 12 символов 
+            string cashierFIO = "";
+            string cashierINN = "";
+            if (cashierData != null)
+            {
+                cashierFIO = cashierData.CashierFIO;
+                if (cashierFIO.Length > 64)
+                    cashierFIO = cashierFIO.Substring(0, 64); // обрезка 
+                cashierINN = cashierData.CashierINN;
+                if (cashierINN.Length > 12)
+                    cashierINN = cashierINN.Substring(0, 12); // обрезка 
+                if (cashierINN.Length < 12)
+                    cashierINN = cashierINN.PadLeft(12, ' '); // добивка пробелами до 12 символов 
+            }           
             string сlientName = clientData.ClientName;
             if (сlientName.Length > 255)
                 сlientName = сlientName.Substring(0, 255); // обрезка 

@@ -380,8 +380,12 @@ namespace KKT_APP_FA.Units
                             // нет ошибок при SendPaymentData, можно двигаться дальше
                             //-----------------------------------------------------------------------------------------------------------------------------------
                             //   7. SendAutomaticDeviceData (если автомат)
-                            response.SendAutomaticDeviceData = kkt.SendAutomaticDeviceData(automaticDeviceData);
-                            if (response.SendAutomaticDeviceData.Result == 0)
+                            if (automaticDeviceData != null)
+                            {
+                                response.SendAutomaticDeviceData = kkt.SendAutomaticDeviceData(automaticDeviceData);
+                            }
+                            
+                            if (automaticDeviceData == null || response.SendAutomaticDeviceData.Result == 0)
                             {
                                 // нет ошибок при SendAutomaticDeviceData, можно двигаться дальше
                                 //-----------------------------------------------------------------------------------------------------------------------------------
@@ -475,6 +479,8 @@ namespace KKT_APP_FA.Units
             OpenShiftResponse osr;
             BaseResponse br;
 
+            kkt.CancelFiscalDocument(); // На всякий случай - отменить открытый фискальный документ
+
             br = kkt.OpenShiftBegin();
             if (br.Result != 0)
             {
@@ -499,6 +505,8 @@ namespace KKT_APP_FA.Units
         {
             CloseShiftResponse csr;
             BaseResponse br;
+
+            kkt.CancelFiscalDocument(); // На всякий случай - отменить открытый фискальный документ
 
             br = kkt.CloseShiftBegin();
             if (br.Result != 0)

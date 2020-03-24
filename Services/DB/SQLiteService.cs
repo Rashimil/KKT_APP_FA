@@ -25,6 +25,7 @@ namespace KKT_APP_FA.Services.DB
             this.dateTimeHelper = dateTimeHelper;
             this.Configuration = Configuration;
             this.SQLiteConnectionString = this.Configuration.GetSection("ConnectionStrings")["LocalDBConnectionString"];
+            CreateSQLiteDatabaseIfNeed(); // автосоздание SQLite файла 
         }
         //=======================================================================================================================================
 
@@ -206,10 +207,37 @@ namespace KKT_APP_FA.Services.DB
         //=======================================================================================================================================
 
         // Поиск транзакции со статусом wait:
-        public RegistrationsContext GetWaitTransaction()
+        public RegistrationsContext GetWaitTransaction() 
         {
             RegistrationsContext context = Select<RegistrationsContext>(new { status = "wait" }, SQLiteConnectionString).FirstOrDefault(); 
             return context;
+        }
+
+        //=======================================================================================================================================
+
+        // Автосоздание БД SQLite, если таковая отсутствует
+        private void CreateSQLiteDatabaseIfNeed()
+        {
+            try
+            {
+                GetWaitTransaction();
+            }
+            catch (Exception) // файл БД отсутствует, нужно его создать 
+            {
+                List<string> sqls = GetCreateSQLiteDBString(new RegistrationsContext());
+                foreach (var sql in sqls)
+                {
+                    SendSQLQuery(sql, SQLiteConnectionString);
+                }
+            }
+        }
+
+        //=======================================================================================================================================
+
+        // Автоочистка файла БД SQLite (удаление старых транзакций + vacuum)
+        public void ClearSQLiteDB()
+        {
+
         }
 
         //=======================================================================================================================================

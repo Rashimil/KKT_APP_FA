@@ -162,11 +162,67 @@ namespace KKT_APP_FA.Services.DB
         }
 
         //=======================================================================================================================================
+
+        // Вывод строк для создания БД SQLite
+        protected List<string> GetCreateSQLiteDBString(object obj)
+        {
+            List<string> result = new List<string>();
+            List<string> indexes = new List<string>();
+
+            string create_string = "CREATE TABLE ";
+            var tablename = ("[" + obj.GetType().Name + "] ").Replace("Context", "");
+            create_string += (tablename + "(");
+            foreach (var p in obj.GetType().GetProperties())
+            {
+                create_string += ("" + (char)13 + (char)10 + "[" + p.Name + "] ");
+                if (p.PropertyType == typeof(bool))
+                    create_string += "BOOLEAN DEFAULT 'true' ";
+                if (p.PropertyType == typeof(int))
+                    create_string += "INTEGER DEFAULT '0' ";
+                if (p.PropertyType == typeof(string))
+                    create_string += "TEXT ";
+
+                var atrs = p.CustomAttributes;
+                if (atrs.Count() == 0)
+                {
+                    create_string += ("NULL ");
+                }
+                foreach (var a in atrs)
+                {
+                    if (a.AttributeType.Name == "KeyAttribute")
+                    {
+                        create_string += ("UNIQUE PRIMARY KEY ");
+                    }
+                    else if (a.AttributeType.Name == "RequiredAttribute")
+                    {
+                        create_string += ("NOT NULL ");
+                    }
+                    else if (a.AttributeType.Name == "IndexAttribute")
+                    {
+                        indexes.Add("CREATE INDEX [" + p.Name + "_idx] ON " + tablename + " ( [" + p.Name + "] DESC );");
+                    }
+                }
+
+                //if (p.Name.ToLower() == "id")  result += ("UNIQUE NOT NULL PRIMARY KEY");
+                //else result += ("NULL");
+
+                create_string += ", ";
+            }
+            create_string = create_string.Remove(create_string.Length - 2);
+            create_string += ("" + (char)13 + (char)10 + "); " + (char)13 + (char)10);
+
+            result.Add(create_string);
+            result.AddRange(indexes);
+
+            return result;
+        }
+
+        //=======================================================================================================================================
         //=======================================================================================================================================
         //=======================================================================================================================================
 
         // Вывод строки с именами полей класса для SQL запроса в Dapper (НЕ НУЖНО)
-        private string GetFieldsToSQLString(object obj)
+        protected string GetFieldsToSQLString(object obj)
         {
             string result = "";
             var t = obj.GetType();
@@ -181,7 +237,7 @@ namespace KKT_APP_FA.Services.DB
         //=======================================================================================================================================
 
         // Вывод строки со значениями полей класса для SQL запроса в Dapper (НЕ НУЖНО)
-        private string GetFieldsValuesToSQLString(object obj)
+        protected string GetFieldsValuesToSQLString(object obj)
         {
             string result = "";
             var t = obj.GetType();
@@ -204,7 +260,7 @@ namespace KKT_APP_FA.Services.DB
                     try
                     {
                         var val = p.GetValue(obj).ToString();
-                        if (val.ToLower() == "true") val = "1"; 
+                        if (val.ToLower() == "true") val = "1";
                         else val = "2";
                         result += (val + ", ");
                     }
@@ -221,7 +277,7 @@ namespace KKT_APP_FA.Services.DB
         //=======================================================================================================================================
 
         // Вывод строК!!! со значениями полей класса для SQL запроса в Dapper (НЕ НУЖНО)
-        private string GetFieldsListValuesToSQLString<T>(List<T> objs)
+        protected string GetFieldsListValuesToSQLString<T>(List<T> objs)
         {
             string result = "";
             foreach (var obj in objs)
@@ -236,8 +292,9 @@ namespace KKT_APP_FA.Services.DB
         //=======================================================================================================================================
 
         // Автогенерация SQL строки для INSERT (одна запись) через Reflection (НЕ НУЖНО)
-        private string GenerateSingleInsertSQL(object obj) {
-            string name = obj.GetType().Name.Replace("Context","");
+        protected string GenerateSingleInsertSQL(object obj)
+        {
+            string name = obj.GetType().Name.Replace("Context", "");
             string sql = "INSERT INTO " + name + " (" + GetFieldsToSQLString(obj) + ") VALUES (" + GetFieldsValuesToSQLString(obj) + ");";
             return sql;
         }

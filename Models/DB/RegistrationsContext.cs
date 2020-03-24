@@ -1,4 +1,5 @@
 ﻿using Dapper;
+using KKT_APP_FA.Attributes;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,13 +12,14 @@ namespace KKT_APP_FA.Models.DB
     public class RegistrationsContext
     {
         [Key]
-        [Required]
+        [Required]       
         public string id { get; set; }
 
         public string group_code { get; set; }
 
         public string operation { get; set; }
 
+        [Index]
         public string uuid { get; set; }
 
         public string timestamp { get; set; }
@@ -32,10 +34,13 @@ namespace KKT_APP_FA.Models.DB
 
         public int response_date_time { get; set; }
 
-        public Boolean error { get; set; }
+        public bool error { get; set; }
 
         public string status { get; set; }
 
         public string kkt_id { get; set; } // НЕ УДАЛЯТЬ
     }
+
+
+    
 }
