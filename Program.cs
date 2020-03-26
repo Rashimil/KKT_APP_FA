@@ -15,6 +15,7 @@ namespace KKT_APP_FA
     {
         public static Task MainTask = null; // по умолчанию null
         public static Task ControlTask = null; // по умолчанию null
+        public static Task SQLiteTask = null; // по умолчанию null
         public static int TransacionsInShift = 0; // количество транзакций в смене
         public static int MaxTransactionsInShift; // максимальное число транзакций, разрешенное в смену. При превышении - автозакрытие смены. Заполняется из конфигурации
         public static bool IsAutomaticDevice; // Признак автомата 

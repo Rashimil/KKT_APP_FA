@@ -83,14 +83,14 @@ namespace KKT_APP_FA.Services.Helpers
         }
 
         //=======================================================================================================================================
-        public long GetCurrentDayToUnixTime() // Возвращает текущий день в unixtime
+        public long GetCurrentDayToUnixTimeSeconds() // Возвращает текущий день в unixtime
         {
             DateTime date = new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day, timezone_shift, 0, 0, DateTimeKind.Utc);
             DateTime origin = new DateTime(1970, 1, 1, timezone_shift, 0, 0, DateTimeKind.Utc);
             TimeSpan diff = date - origin;
             try
             {
-                return Convert.ToInt64(Math.Round(Math.Floor(diff.TotalMilliseconds), 0));
+                return Convert.ToInt64(Math.Round(Math.Floor(diff.TotalSeconds), 0));
             }
             catch (Exception)
             {

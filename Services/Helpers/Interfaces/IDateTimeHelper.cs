@@ -8,7 +8,7 @@ namespace KKT_APP_FA.Services.Helpers
         int ConvertToUnixTimeSeconds(DateTime date_time);
         int ConvertToUnixTimeSeconds(string date_time);
         string DateToFolderName(DateTime dateTime);
-        long GetCurrentDayToUnixTime();
+        long GetCurrentDayToUnixTimeSeconds();
         int GetTimeZoneShift();
     }
 }

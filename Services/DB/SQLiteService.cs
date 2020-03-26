@@ -237,7 +237,23 @@ namespace KKT_APP_FA.Services.DB
         // Автоочистка файла БД SQLite (удаление старых транзакций + vacuum)
         public void ClearSQLiteDB()
         {
-
+            try
+            {
+                string response_date_time = (dateTimeHelper.GetCurrentDayToUnixTimeSeconds() - 24 * 60 * 60).ToString(); // Текущий день минус сутки
+                List<string> sqls = new List<string>();
+                string table_name = new RegistrationsContext().GetType().Name.Replace("Context", "");
+                string sql = "DELETE FROM " + (table_name + " WHERE [status] = 'done' AND [request_date_time] < " + response_date_time);
+                sqls.Add(sql);
+                sql = "VACUUM";
+                sqls.Add(sql);
+                foreach (var s in sqls)
+                {
+                    SendSQLQuery(s, SQLiteConnectionString);
+                }
+            }
+            catch (Exception)
+            {
+            }
         }
 
         //=======================================================================================================================================

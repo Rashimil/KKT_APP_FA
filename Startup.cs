@@ -88,12 +88,13 @@ namespace KKT_APP_FA
             logger.Write("MainCycle Task started. Id = " + Program.MainTask.Id + ", Status: " + Program.MainTask.Status, log_file_name);
 
             // стартуем контрольный таск:
-            Program.ControlTask = Task.Factory.StartNew(() => {
-                TaskStatus status;
+            Program.ControlTask = Task.Factory.StartNew(() =>
+            {
+                TaskStatus mainTaskStatus;
                 while (true)
                 {
-                    status = Program.MainTask.Status;
-                    if (status.ToString().ToLower() != "running") // если главный таск упал
+                    mainTaskStatus = Program.MainTask.Status;
+                    if (mainTaskStatus.ToString().ToLower() != "running") // если главный таск упал
                     {
                         logger.Write("MainCycle Task crashed!!! Status: " + Program.MainTask.Status, log_file_name, false);
                         // рестартуем главный таск:
@@ -102,8 +103,18 @@ namespace KKT_APP_FA
                         mainCycle.Start();
                         logger.Write("MainCycle Task restarted. Id = " + Program.MainTask.Id + ", Status: " + Program.MainTask.Status, log_file_name);
                     }
-                    //Console.WriteLine(DateTime.Now.ToString("dd.MM.yyyy HH:mm:ss") + " MainTask status: " + status.ToString());
                     Thread.Sleep(1000);
+                }
+            });
+
+            // Стартуем таск, очищающий БД
+            Program.SQLiteTask = Task.Factory.StartNew(() =>
+            {
+                while (true)
+                {
+                    var dt = DateTime.Now.Hour;
+                    sQLiteService.ClearSQLiteDB();
+                    Thread.Sleep(24 * 60 * 60 * 1000); // ждем сутки
                 }
             });
         }
