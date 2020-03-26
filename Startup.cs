@@ -28,7 +28,7 @@ namespace KKT_APP_FA
 
         MainCycle mainCycle;
 
-        string log_file_name;
+        string main_log_file_name;
 
         //==============================================================================================================================================
         public Startup(IConfiguration configuration)
@@ -37,7 +37,7 @@ namespace KKT_APP_FA
             ConfigStatic = configuration;
             try { Program.MaxTransactionsInShift = Convert.ToInt32(configuration.GetSection("MainSettings")["MaxTransactionsInShift"]); } catch { Program.MaxTransactionsInShift = 5000; }
             try { Program.IsAutomaticDevice = (configuration.GetSection("MainSettings")["IsAutomaticDevice"].ToLower()) == "true" ? true : false; } catch { Program.IsAutomaticDevice = true; }
-            log_file_name = "main_log";
+            main_log_file_name = "main_log";
         }
 
         //==============================================================================================================================================
@@ -83,9 +83,9 @@ namespace KKT_APP_FA
 
             // стартуем главный цикл:
             mainCycle = new MainCycle(cRC32, sQLiteService, aPIHelper, logger, configuration);
-            logger.Write("Starting MainCycle Task...", log_file_name, false);
+            logger.Write("Starting MainCycle Task...", main_log_file_name, false);
             mainCycle.Start();
-            logger.Write("MainCycle Task started. Id = " + Program.MainTask.Id + ", Status: " + Program.MainTask.Status, log_file_name);
+            logger.Write("MainCycle Task started. Id = " + Program.MainTask.Id + ", Status: " + Program.MainTask.Status, main_log_file_name);
 
             // стартуем контрольный таск:
             Program.ControlTask = Task.Factory.StartNew(() =>
@@ -96,12 +96,12 @@ namespace KKT_APP_FA
                     mainTaskStatus = Program.MainTask.Status;
                     if (mainTaskStatus.ToString().ToLower() != "running") // если главный таск упал
                     {
-                        logger.Write("MainCycle Task crashed!!! Status: " + Program.MainTask.Status, log_file_name, false);
+                        logger.Write("MainCycle Task crashed!!! Status: " + Program.MainTask.Status, main_log_file_name, false);
                         // рестартуем главный таск:
-                        logger.Write("Restarting MainCycle Task...", log_file_name, false);
+                        logger.Write("Restarting MainCycle Task...", main_log_file_name, false);
                         mainCycle = new MainCycle(cRC32, sQLiteService, aPIHelper, logger, configuration);
                         mainCycle.Start();
-                        logger.Write("MainCycle Task restarted. Id = " + Program.MainTask.Id + ", Status: " + Program.MainTask.Status, log_file_name);
+                        logger.Write("MainCycle Task restarted. Id = " + Program.MainTask.Id + ", Status: " + Program.MainTask.Status, main_log_file_name);
                     }
                     Thread.Sleep(1000);
                 }
@@ -113,7 +113,13 @@ namespace KKT_APP_FA
                 while (true)
                 {
                     var dt = DateTime.Now.Hour;
-                    sQLiteService.ClearSQLiteDB();
+                    var results = sQLiteService.ClearSQLiteDB();
+                    logger.Write("Clearing SQLite file: ", main_log_file_name, false);
+                    foreach (var r in results)
+                    {
+                        logger.Write("SQL: " + r, main_log_file_name, false);
+                    }
+                    logger.Write("SQLite file cleared! ", main_log_file_name);
                     Thread.Sleep(24 * 60 * 60 * 1000); // ждем сутки
                 }
             });

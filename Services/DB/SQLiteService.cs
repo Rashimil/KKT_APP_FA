@@ -207,9 +207,9 @@ namespace KKT_APP_FA.Services.DB
         //=======================================================================================================================================
 
         // Поиск транзакции со статусом wait:
-        public RegistrationsContext GetWaitTransaction() 
+        public RegistrationsContext GetWaitTransaction()
         {
-            RegistrationsContext context = Select<RegistrationsContext>(new { status = "wait" }, SQLiteConnectionString).FirstOrDefault(); 
+            RegistrationsContext context = Select<RegistrationsContext>(new { status = "wait" }, SQLiteConnectionString).FirstOrDefault();
             return context;
         }
 
@@ -235,8 +235,9 @@ namespace KKT_APP_FA.Services.DB
         //=======================================================================================================================================
 
         // Автоочистка файла БД SQLite (удаление старых транзакций + vacuum)
-        public void ClearSQLiteDB()
+        public List<string> ClearSQLiteDB()
         {
+            var results = new List<string>();
             try
             {
                 string response_date_time = (dateTimeHelper.GetCurrentDayToUnixTimeSeconds() - 24 * 60 * 60).ToString(); // Текущий день минус сутки
@@ -248,12 +249,14 @@ namespace KKT_APP_FA.Services.DB
                 sqls.Add(sql);
                 foreach (var s in sqls)
                 {
-                    SendSQLQuery(s, SQLiteConnectionString);
+                    int res = SendSQLQuery(s, SQLiteConnectionString);
+                    results.Add(s + ", Result: " + res);
                 }
             }
             catch (Exception)
             {
             }
+            return results;
         }
 
         //=======================================================================================================================================
