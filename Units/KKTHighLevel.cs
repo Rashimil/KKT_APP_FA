@@ -1,4 +1,5 @@
 ﻿using KKT_APP_FA.Enums;
+using KKT_APP_FA.Extensions;
 using KKT_APP_FA.Helpers;
 using KKT_APP_FA.Models;
 using KKT_APP_FA.Models.API;
@@ -35,7 +36,7 @@ namespace KKT_APP_FA.Units
             {
                 cashierData = new CashierData(body.receipt.company.payment_address, body.receipt.company.inn);
             }
-            
+
             // Получение данных клиента:
             ClientData clientData = new ClientData(body.receipt.client.email, "");
 
@@ -144,8 +145,8 @@ namespace KKT_APP_FA.Units
             response.GetShiftInfo = kkt.GetShiftInfo();
             if (!response.GetShiftInfo.ShiftOpened) // смена закрыта, нужно закрыть и открыть заново:
             {
-                var oShift = OpenShift(body);
-                response.OpenShift = oShift.OpenShiftResponse; 
+                var oShift = OpenShift(body.receipt.company);
+                response.OpenShift = oShift.OpenShiftResponse;
                 if (response.OpenShift != null)
                 {
                     // Смена успешно открыта
@@ -173,13 +174,13 @@ namespace KKT_APP_FA.Units
                 response.OpenCheck = kkt.OpenCheck();
                 if (response.OpenCheck.Result == 22) //  0x16 - смена истекла 
                 {
-                    var cShift = CloseShift(body); // закрыть смену
+                    var cShift = CloseShift(body.receipt.company); // закрыть смену
                     response.CloseShift = cShift.CloseShiftResponse;
                     if (response.CloseShift == null)
                     {
                         // TODO подумать как переоткрывать смену или лочить ККТ
-                    }     
-                    var oShift = OpenShift(); // открыть смену
+                    }
+                    var oShift = OpenShift(body.receipt.company); // открыть смену
                     response.OpenShift = oShift.OpenShiftResponse;
                     if (response.OpenShift == null)
                     {
@@ -384,7 +385,7 @@ namespace KKT_APP_FA.Units
                             {
                                 response.SendAutomaticDeviceData = kkt.SendAutomaticDeviceData(automaticDeviceData);
                             }
-                            
+
                             if (automaticDeviceData == null || response.SendAutomaticDeviceData.Result == 0)
                             {
                                 // нет ошибок при SendAutomaticDeviceData, можно двигаться дальше
@@ -466,15 +467,313 @@ namespace KKT_APP_FA.Units
         //=======================================================================================================================================
 
         // КОРРЕКЦИИ
-        public dynamic Correction(Correction body, string operation, bool no_print_receipt = true)
+        public KKTHighLevelResponse Correction(Correction body, string operation, bool no_print_receipt = true)
         {
-            return null;
+            KKTHighLevelResponse response = new KKTHighLevelResponse();
+
+            // Получение taxType (СНО):
+            TaxTypeEnum taxType;
+            switch (body.correction.company.sno.ToLower()) // СНО пользователя. 
+            {
+                case "osn":
+                    taxType = TaxTypeEnum.Common;
+                    break;
+                case "usn_income":
+                    taxType = TaxTypeEnum.Simplified;
+                    break;
+                case "usn_income_outcome":
+                    taxType = TaxTypeEnum.Simplified2;
+                    break;
+                case "envd":
+                    taxType = TaxTypeEnum.ENVD;
+                    break;
+                case "esn":
+                    taxType = TaxTypeEnum.ESN;
+                    break;
+                case "patent":
+                    taxType = TaxTypeEnum.Patent;
+                    break;
+                default:
+                    taxType = TaxTypeEnum.Common;
+                    break;
+            }
+
+            // Получение типов оплаты и заодно totalSum:
+            double totalSum = 0;
+            decimal CASH = 0;
+            decimal ELECTRONICALLY = 0;
+            decimal PREPAID = 0;
+            decimal CREDIT = 0;
+            decimal OTHER = 0;
+            foreach (var item in body.correction.payments)
+            {
+                switch (item.type)
+                {
+                    case 1:
+                        ELECTRONICALLY += (decimal)item.sum; // LIBFPTR_PT_ELECTRONICALLY - электронный
+                        break;
+                    case 2:
+                        PREPAID += (decimal)item.sum; //  предварительная оплата(аванс)
+                        break;
+                    case 3:
+                        CREDIT += (decimal)item.sum; //  последующая оплата(кредит)
+                        break;
+                    case 4:
+                        OTHER += (decimal)item.sum; //  иная форма оплаты(встречное предоставление)
+                        break;
+                    case 5:
+                        CASH += (decimal)item.sum; // иная форма оплаты(встречное предоставление)
+                        break;
+                    default:
+                        CASH += (decimal)item.sum; // По умолчанию  CASH - наличные
+                        break;
+                }
+                totalSum += item.sum;
+            }
+
+            // Получение типов налогов по суммам:
+            decimal Vat20SUM = 0;
+            decimal Vat10SUM = 0;
+            decimal Vat0SUM = 0;
+            decimal VatNoneSUM = 0;
+            decimal Vat20120SUM = 0;
+            decimal Vat10110SUM = 0;
+            foreach (var item in body.correction.vats)
+            {
+                switch (item.type.ToLower())
+                {
+                    case "vat18":
+                        Vat20SUM += (decimal)item.sum;
+                        break;
+                    case "vat20":
+                        Vat20SUM += (decimal)item.sum;
+                        break;
+                    case "vat10":
+                        Vat10SUM += (decimal)item.sum;
+                        break;
+                    case "vat0":
+                        Vat0SUM += (decimal)item.sum;
+                        break;
+                    case "none":
+                        VatNoneSUM += (decimal)item.sum;
+                        break;
+                    case "vat118":
+                        Vat20120SUM += (decimal)item.sum;
+                        break;
+                    case "vat120":
+                        Vat20120SUM += (decimal)item.sum;
+                        break;
+                    case "vat110":
+                        Vat10110SUM += (decimal)item.sum;
+                        break;
+                    default:
+                        VatNoneSUM += (decimal)item.sum; // По умолчанию  VatNone - без НДС
+                        break;
+                }
+
+            }
+
+            // Получение AutomaticDeviceData:
+            AutomaticDeviceData automaticDeviceData = null;
+            if (Program.IsAutomaticDevice)
+            {
+                automaticDeviceData = new AutomaticDeviceData(
+                    body.correction.company.payment_address,
+                    "Центр обработки данных",
+                    " " // ХЗ ГДЕ БРАТЬ НОМЕР АВТОМАТА !!!!!!! Этого не было в протоколе атола, надо добавлять!!!!
+                    );
+            }
+
+            // Получение RegisterCorrectionCheck:
+            OperationEnum Operation;
+            switch (operation.ToLower())
+            {
+                case "sell":
+                    Operation = OperationEnum.Sell; // LIBFPTR_RT_SELL - чек прихода (продажи)
+                    break;
+                case "sell_refund":
+                    Operation = OperationEnum.SellRefund; // LIBFPTR_RT_SELL_RETURN - чек возврата прихода(продажи)
+                    break;
+                case "buy":
+                    Operation = OperationEnum.Buy; // LIBFPTR_RT_BUY - чек расхода(покупки)
+                    break;
+                case "buy_refund":
+                    Operation = OperationEnum.BuyRefund; // LIBFPTR_RT_BUY_RETURN - чек возврата расхода(покупки)
+                    break;
+                default:
+                    Operation = OperationEnum.Sell; // По умолчанию LIBFPTR_RT_SELL - чек прихода (продажи)
+                    break;
+            }
+            RegisterCorrectionCheck registerCorrectionCheck = new RegisterCorrectionCheck(
+                Operation,
+                (decimal)totalSum
+                );
+
+            // Получение CorrectionType:
+            byte CorrectionType = 0;
+            switch (body.correction.correction_info.type.ToLower())
+            {
+                case "self":
+                    CorrectionType = 0; // 0 - самостоятельно
+                    break;
+                case "instruction":
+                    CorrectionType = 1; // 1 - по предписанию
+                    break;
+                default:
+                    CorrectionType = 0; // по умолчанию 0 - самостоятельно
+                    break;
+            }
+
+            // Получение BaseCorrectionData:         
+            var logicLevel = new LogicLevel();
+            var _stlv = new List<byte[]>();
+            byte[] docName = logicLevel.BuildTLV(1177, body.correction.correction_info.base_name); // Наименование документа основания
+            byte[] docDate = logicLevel.BuildTLV(1178, body.correction.correction_info.base_date.TimestampToUnixtime()); // Дата документа основания
+            byte[] docNumber = logicLevel.BuildTLV(1179, body.correction.correction_info.base_number); // Номер документа основания 
+            _stlv.Add(docName);
+            _stlv.Add(docDate);
+            _stlv.Add(docNumber);
+
+            byte[] BaseCorrectionData = logicLevel.BuildSTLV(1174, _stlv);
+
+            //-----------------------------------------------------------------------------------------------------------------------------------
+            // На всякий случай - отменить открытый фискальный документ
+            kkt.CancelFiscalDocument();
+
+            //-----------------------------------------------------------------------------------------------------------------------------------
+            // Удостовериться что
+            //       а) смена открыта (GetShiftInfo)
+            response.GetShiftInfo = kkt.GetShiftInfo();
+            if (!response.GetShiftInfo.ShiftOpened) // смена закрыта, нужно закрыть и открыть заново:
+            {
+                var oShift = OpenShift(body.correction.company);
+                response.OpenShift = oShift.OpenShiftResponse;
+                if (response.OpenShift != null)
+                {
+                    // Смена успешно открыта
+                    response.GetShiftInfo.ShiftOpened = true;
+                    response.error = false;
+                    response.GetShiftInfo.Result = 0;
+                }
+                else
+                {
+                    // Смену открыть не удалось
+                    response.GetShiftInfo.ShiftOpened = false;
+                    response.error = true;
+                    response.error_code = oShift.BaseResponse.Result;
+                    response.error_text = oShift.BaseResponse.Description;
+                    response.error_type = oShift.BaseResponse.ErrorCode.ToString();
+                }
+            }
+
+            if (response.GetShiftInfo.Result == 0)
+            {
+                // Смена открыта, идем далее
+                //-----------------------------------------------------------------------------------------------------------------------------------
+                // Удостовериться что
+                //       б) что не прошло 24 часа (пытаться OpenCheck, если ошибка 22 - то закрыть и открыть смену)
+                response.OpenCorrectionCheck = kkt.OpenCorrectionCheck();
+                if (response.OpenCorrectionCheck.Result == 22) //  0x16 - смена истекла 
+                {
+                    var cShift = CloseShift(body.correction.company); // закрыть смену
+                    response.CloseShift = cShift.CloseShiftResponse;
+                    if (response.CloseShift == null)
+                    {
+                        // TODO подумать как переоткрывать смену или лочить ККТ
+                    }
+                    var oShift = OpenShift(body.correction.company); // открыть смену
+                    response.OpenShift = oShift.OpenShiftResponse;
+                    if (response.OpenShift == null)
+                    {
+                        // TODO подумать как переоткрывать смену или лочить ККТ
+                    }
+                    response.OpenCorrectionCheck = kkt.OpenCorrectionCheck();
+                }
+
+                if (response.OpenCorrectionCheck.Result == 0)
+                {
+                    // Чек коррекции успешно открыт, идем далее
+                    //-----------------------------------------------------------------------------------------------------------------------------------
+
+                    // Передать данные чека коррекции (0x2E)
+                    AuthorizedPersonData authorizedPersonData = new AuthorizedPersonData(
+                        "", // НЕИЗВЕСТНО ГДЕ БРАТЬ !!! в АПИ АТОЛА НЕТ !!!
+                        body.correction.company.inn
+                        );
+                    CorrectionCheckData correctionCheckData = new CorrectionCheckData(
+                        authorizedPersonData,
+                        CorrectionType,
+                        taxType,
+                        CASH,
+                        ELECTRONICALLY,
+                        PREPAID,
+                        CREDIT,
+                        OTHER,
+                        Vat20SUM,
+                        Vat10SUM,
+                        Vat0SUM,
+                        VatNoneSUM,
+                        Vat20120SUM,
+                        Vat10110SUM,
+                        BaseCorrectionData
+                        );
+
+                    response.SendCorrectionCheckData = kkt.SendCorrectionCheckData(correctionCheckData);
+                    if (response.SendCorrectionCheckData.Result == 0)
+                    {
+                        // Данные коррекции (SendCorrectionCheckData) отправлены успешно, идем далее
+                        //-----------------------------------------------------------------------------------------------------------------------------------
+
+                        // Передать данные автоматического устройства расчетов для кассового чека (БСО) коррекции (0x3F)
+                        // SendCorrectionAutomaticDeviceData (если автомат)
+                        if (automaticDeviceData != null)
+                        {
+                            response.SendCorrectionAutomaticDeviceData = kkt.SendCorrectionAutomaticDeviceData(automaticDeviceData);
+                        }
+
+                        if (automaticDeviceData == null || response.SendCorrectionAutomaticDeviceData.Result == 0)
+                        {
+                            // нет ошибок при SendCorrectionAutomaticDeviceData, можно двигаться дальше
+                            //-----------------------------------------------------------------------------------------------------------------------------------
+
+                            // Сформировать чек коррекции (0x26)
+                            ава
+                        }
+                        else
+                        {
+                            // ошибка при SendCorrectionAutomaticDeviceData
+                            response.error = true;
+                            response.error_code = response.SendCorrectionAutomaticDeviceData.Result;
+                            response.error_text = response.SendCorrectionAutomaticDeviceData.Description;
+                            response.error_type = response.SendCorrectionAutomaticDeviceData.ErrorCode.ToString();
+                        }
+                    }
+                    else
+                    {
+                        // Данные коррекции (SendCorrectionCheckData) отправить не удалось
+                        response.error = true;
+                        response.error_code = response.SendCorrectionCheckData.Result;
+                        response.error_text = response.SendCorrectionCheckData.Description;
+                        response.error_type = response.SendCorrectionCheckData.ErrorCode.ToString();
+                    }
+                }
+                else
+                {
+                    // Чек коррекции открыт не удалось
+                    response.error = true;
+                    response.error_code = response.OpenCorrectionCheck.Result;
+                    response.error_text = response.OpenCorrectionCheck.Description;
+                    response.error_type = response.OpenCorrectionCheck.ErrorCode.ToString();
+                }
+
+
+            }
         }
 
         //=======================================================================================================================================
 
         // ОТКРЫТИЕ СМЕНЫ
-        public (BaseResponse BaseResponse, OpenShiftResponse OpenShiftResponse) OpenShift(Registration body = null)
+        public (BaseResponse BaseResponse, OpenShiftResponse OpenShiftResponse) OpenShift(Company company = null)//Registration body = null)
         {
             OpenShiftResponse osr;
             BaseResponse br;
@@ -485,10 +784,10 @@ namespace KKT_APP_FA.Units
             if (br.Result != 0)
             {
                 return (br, null);
-            }           
-            if (body != null && !Program.IsAutomaticDevice) // Отправляем данные кассира, если они есть и ККТ не для автомата:
+            }
+            if (company != null && !Program.IsAutomaticDevice) // Отправляем данные кассира, если они есть и ККТ не для автомата:
             {
-                br = kkt.SendCashierData(new CashierData(body.receipt.company.payment_address, body.receipt.company.inn));
+                br = kkt.SendCashierData(new CashierData(company.payment_address, company.inn));
                 if (br.Result != 0)
                 {
                     // return (br, null); НЕ возвращаем ошибку, т. к. отсутствие этого особо ни на что не влияет 
@@ -501,7 +800,7 @@ namespace KKT_APP_FA.Units
         //=======================================================================================================================================
 
         // ЗАКРЫТИЕ СМЕНЫ
-        public (BaseResponse BaseResponse, CloseShiftResponse CloseShiftResponse) CloseShift(Registration body = null)
+        public (BaseResponse BaseResponse, CloseShiftResponse CloseShiftResponse) CloseShift(Company company = null)
         {
             CloseShiftResponse csr;
             BaseResponse br;
@@ -513,9 +812,9 @@ namespace KKT_APP_FA.Units
             {
                 return (br, null);
             }
-            if (body != null && !Program.IsAutomaticDevice) // Отправляем данные кассира, если они есть и ККТ не для автомата:
+            if (company != null && !Program.IsAutomaticDevice) // Отправляем данные кассира, если они есть и ККТ не для автомата:
             {
-                br = kkt.SendCashierData(new CashierData(body.receipt.company.payment_address, body.receipt.company.inn));
+                br = kkt.SendCashierData(new CashierData(company.payment_address, company.inn));
                 if (br.Result != 0)
                 {
                     // return (br, null); НЕ возвращаем ошибку, т. к. отсутствие этого особо ни на что не влияет 

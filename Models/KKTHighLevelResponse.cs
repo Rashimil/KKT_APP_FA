@@ -47,6 +47,9 @@ namespace KKT_APP_FA.Models
         public BaseResponse SendPaymentData { get; set; }
         public BaseResponse SendAutomaticDeviceData { get; set; }
         public RegisterCheckResponse RegisterCheck { get; set; }
+        public BaseResponse OpenCorrectionCheck { get; set; }
+        public BaseResponse SendCorrectionCheckData { get; set; }
+        public BaseResponse SendCorrectionAutomaticDeviceData { get; set; }
         //public GetFnNumberResponse GetFnNumber { get; set; }
         //public GetKktStatusResponse GetKktStatus { get; set; }
         //public GetRegistrationParametersResponse GetRegistrationParameters { get; set; }
