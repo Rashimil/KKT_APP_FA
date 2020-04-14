@@ -24,7 +24,7 @@ namespace KKT_APP_FA.Models.KKTRequest
             decimal VatNoneSUM,
             decimal Vat20120SUM,
             decimal Vat10110SUM,
-            STLV BaseCorrectionData
+            byte[] BaseCorrectionData
             )
         {
             // Корректировка null - значений:
@@ -46,7 +46,7 @@ namespace KKT_APP_FA.Models.KKTRequest
             uint vatNoneSUM = (uint)Math.Truncate(VatNoneSUM * 100); // в копейках
             uint vat20120SUM = (uint)Math.Truncate(Vat20120SUM * 100); // в копейках
             uint vat10110SUM = (uint)Math.Truncate(Vat10110SUM * 100); // в копейках
-            byte[] baseCorrectionData = BaseCorrectionData.VALUE;
+            byte[] baseCorrectionData = BaseCorrectionData;
 
             // Заполнение:
             this.AuthorizedPersonFIO = new KKTRequestProperty<string>() { TAG = 1021, USER_VALUE = authorizedPersonFIO };
@@ -64,7 +64,7 @@ namespace KKT_APP_FA.Models.KKTRequest
             this.VatNoneSUM = new KKTRequestProperty<uint>() { TAG = 1105, USER_VALUE = vatNoneSUM };
             this.Vat20120SUM = new KKTRequestProperty<uint>() { TAG = 1106, USER_VALUE = vat20120SUM };
             this.Vat10110SUM = new KKTRequestProperty<uint>() { TAG = 1107, USER_VALUE = vat10110SUM };
-            this.BaseCorrectionData = new KKTRequestProperty<byte[]>() { TAG = 1174, USER_VALUE = baseCorrectionData };
+            this.BaseCorrectionData = new KKTRequestProperty<byte[]>() { TAG = 1174, USER_VALUE = baseCorrectionData.Skip(4).ToArray() };
         }
         public KKTRequestProperty<string> AuthorizedPersonFIO { get; set; } // ФИО уполномоченного лица. 1021. Не более 63 символов
         public KKTRequestProperty<string> AuthorizedPersonINN { get; set; } // ИНН уполномоченного лица. 1203. 12 символов
@@ -82,6 +82,6 @@ namespace KKT_APP_FA.Models.KKTRequest
         public KKTRequestProperty<uint> Vat20120SUM { get; set; } // Сумма по чеку, от которой считается НДС по ставке 20/120% (в копейках) 1106
         public KKTRequestProperty<uint> Vat10110SUM { get; set; } // Сумма по чеку, от которой считается НДС по ставке 10/110% (в копейках) 1107
         public KKTRequestProperty<byte[]> BaseCorrectionData { get; set; } // STLV включает 3 TLV Объекта. 1174. Наименование, Дата, Номер документа - основания для коррекции
-         
+
     }
 }

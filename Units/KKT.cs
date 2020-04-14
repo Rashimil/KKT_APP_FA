@@ -560,6 +560,7 @@ namespace KKT_APP_FA.Units
                 DA DC crc
              */
             #endregion
+
             logicLevel = new LogicLevel();
             var tlvList = new List<byte>();
             byte[] tlv;
@@ -591,7 +592,68 @@ namespace KKT_APP_FA.Units
         }
 
         // Передать данные автоматического устройства расчетов для кассового чека (БСО) коррекции (0x3F)
-        // Сформировать чек коррекции (0x26)
+        public BaseResponse SendCorrectionAutomaticDeviceData(AutomaticDeviceData automaticDeviceData)
+        {
+            logicLevel = new LogicLevel();
+            var tlvList = new List<byte>();
+            byte[] tlv;
+            foreach (var item in automaticDeviceData.GetType().GetProperties())
+            {
+                try
+                {
+                    var val = item.GetValue(automaticDeviceData).GetType().GetProperties();
+                    var TAG = (int)val[0].GetValue(item.GetValue(automaticDeviceData));
+                    var USER_VALUE = val[1].GetValue(item.GetValue(automaticDeviceData));
+                    tlv = logicLevel.BuildTLV(TAG, USER_VALUE);
+                    tlvList.AddRange(tlv);
+                }
+                catch (Exception)
+                {
+                }
+            }
+            byte[] DATA = tlvList.ToArray();
+            logicLevel.BuildRequestCommand((byte)CommandEnum.SEND_CORRECTION_AUTOMATIC_DEVICE_DATA, DATA);
+            var LLResponse = logicLevel.SendRequestCommand();
+            if (LLResponse.connectResult.Connected)
+            {
+                return new BaseResponse(logicLevel);
+            }
+            else
+            {
+                //return null;
+                return new BaseResponse(logicLevel);
+            }
+        }
+
+        // Сформировать чек коррекции (0x26) 
+        public RegisterCorrectionCheckResponse RegisterCorrectionCheck(RegisterCorrectionCheck registerCorrectionCheck)
+        {
+            logicLevel = new LogicLevel();
+            var list = new List<byte>();
+            foreach (var item in registerCorrectionCheck.GetType().GetProperties())
+            {
+                try
+                {
+                    var USER_VALUE = item.GetValue(registerCorrectionCheck);
+                    list.AddRange(logicLevel.ConvertToByteArray(USER_VALUE));
+                }
+                catch (Exception)
+                {
+                }
+            }
+            byte[] DATA = list.ToArray();
+            logicLevel.BuildRequestCommand((byte)CommandEnum.CORRECTION_CHECK, DATA);
+            var LLResponse = logicLevel.SendRequestCommand();
+            if (LLResponse.connectResult.Connected)
+            {
+                return new RegisterCorrectionCheckResponse(logicLevel);
+            }
+            else
+            {
+                //return null;
+                return new RegisterCorrectionCheckResponse(logicLevel);
+            }
+        }
 
         //==============================================================================================================================================
 
