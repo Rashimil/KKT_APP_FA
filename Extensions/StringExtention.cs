@@ -10,7 +10,7 @@ namespace KKT_APP_FA.Extensions
     { 
         //==============================================================================================================================================
 
-        public static long TimestampToUnixtime(this string timestamp) // формат dd.MM.yyyy
+        public static int TimestampToUnixtime(this string timestamp) // формат dd.MM.yyyy
         {
             DateTime dateTime;
             try
@@ -23,7 +23,7 @@ namespace KKT_APP_FA.Extensions
                 // случай d.MM.yyyy
                 dateTime = DateTime.ParseExact(timestamp, "d.MM.yyyy", null);
             }
-            DateTime origin = new DateTime(1970, 1, 1, 5, 0, 0, DateTimeKind.Utc);
+            DateTime origin = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
             TimeSpan diff = dateTime - origin;
             try
             {

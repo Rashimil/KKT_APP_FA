@@ -470,6 +470,7 @@ namespace KKT_APP_FA.Units
         public KKTHighLevelResponse Correction(Correction body, string operation, bool no_print_receipt = true)
         {
             KKTHighLevelResponse response = new KKTHighLevelResponse();
+            short ShiftNumber = 0; 
 
             // Получение taxType (СНО):
             TaxTypeEnum taxType;
@@ -633,7 +634,6 @@ namespace KKT_APP_FA.Units
             _stlv.Add(docName);
             _stlv.Add(docDate);
             _stlv.Add(docNumber);
-
             byte[] BaseCorrectionData = logicLevel.BuildSTLV(1174, _stlv);
 
             //-----------------------------------------------------------------------------------------------------------------------------------
@@ -644,6 +644,7 @@ namespace KKT_APP_FA.Units
             // Удостовериться что
             //       а) смена открыта (GetShiftInfo)
             response.GetShiftInfo = kkt.GetShiftInfo();
+            ShiftNumber = response.GetShiftInfo.ShiftNumber;
             if (!response.GetShiftInfo.ShiftOpened) // смена закрыта, нужно закрыть и открыть заново:
             {
                 var oShift = OpenShift(body.correction.company);
@@ -654,6 +655,7 @@ namespace KKT_APP_FA.Units
                     response.GetShiftInfo.ShiftOpened = true;
                     response.error = false;
                     response.GetShiftInfo.Result = 0;
+                    ShiftNumber = response.OpenShift.ShiftNumber;
                 }
                 else
                 {
@@ -663,6 +665,7 @@ namespace KKT_APP_FA.Units
                     response.error_code = oShift.BaseResponse.Result;
                     response.error_text = oShift.BaseResponse.Description;
                     response.error_type = oShift.BaseResponse.ErrorCode.ToString();
+                    ShiftNumber = 0;
                 }
             }
 
@@ -737,7 +740,34 @@ namespace KKT_APP_FA.Units
                             //-----------------------------------------------------------------------------------------------------------------------------------
 
                             // Сформировать чек коррекции (0x26)
-                            ава
+                            response.RegisterCorrectionCheck = kkt.RegisterCorrectionCheck(registerCorrectionCheck);
+                            if (response.RegisterCorrectionCheck.Result == 0)
+                            {
+                                // Всё прошло успешно, можно выдавать инфу о чеке корреции:
+                                response.total = CASH + ELECTRONICALLY + PREPAID + CREDIT + OTHER;
+                                response.fns_site = "nalog.ru";
+                                response.fn_number = KktStaticValues.FN;
+                                response.shift_number = ShiftNumber;
+                                //response.receipt_datetime = response.RegisterCorrectionCheck.CheckDateTime;
+                                response.receipt_datetime = DateTime.Now.ToString("dd.MM.yyyy HH:mm:ss"); // 15.04.2020 13:45 ВРЕМЕННО так, но по идее надо считывать данные последнего фискального документа
+                                response.fiscal_receipt_number = response.RegisterCorrectionCheck.CheckNumber;
+                                response.fiscal_document_number = Convert.ToInt32(response.RegisterCorrectionCheck.FD);
+                                response.ecr_registration_number = KktStaticValues.KKTRegistrationNumber;
+                                response.fiscal_document_attribute = Convert.ToInt64(response.RegisterCorrectionCheck.FPD);
+                                response.daemon_code = "KKT-APP-" + KktStaticValues.KKTFactoryNumber;
+                                response.device_code = KktStaticValues.FirmwareVersion;
+                                response.error_code = 0;
+                                response.error_text = null;
+                                response.error_type = null;
+                            }
+                            else
+                            {
+                                // ошибка формирования чека коррекции (RegisterCorrectionCheck)
+                                response.error = true;
+                                response.error_code = response.RegisterCorrectionCheck.Result;
+                                response.error_text = response.RegisterCorrectionCheck.Description;
+                                response.error_type = response.RegisterCorrectionCheck.ErrorCode.ToString();
+                            }
                         }
                         else
                         {
@@ -765,9 +795,16 @@ namespace KKT_APP_FA.Units
                     response.error_text = response.OpenCorrectionCheck.Description;
                     response.error_type = response.OpenCorrectionCheck.ErrorCode.ToString();
                 }
-
-
             }
+            else
+            {
+                // Смену открыть не удалось
+                response.GetShiftInfo.ShiftOpened = false;
+                response.error = true;
+                // остальные поля (error_code, error_text, error_type) уже заполнены выше
+            }
+            if (response.error) response.error_type = "driver"; // для совместимости с логикой АТОЛ
+            return response;
         }
 
         //=======================================================================================================================================

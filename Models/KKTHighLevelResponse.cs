@@ -50,6 +50,7 @@ namespace KKT_APP_FA.Models
         public BaseResponse OpenCorrectionCheck { get; set; }
         public BaseResponse SendCorrectionCheckData { get; set; }
         public BaseResponse SendCorrectionAutomaticDeviceData { get; set; }
+        public RegisterCorrectionCheckResponse RegisterCorrectionCheck { get; set; }
         //public GetFnNumberResponse GetFnNumber { get; set; }
         //public GetKktStatusResponse GetKktStatus { get; set; }
         //public GetRegistrationParametersResponse GetRegistrationParameters { get; set; }
