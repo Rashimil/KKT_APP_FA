@@ -12,12 +12,11 @@ namespace KKT_APP_FA.Models.KKTResponse
         public RegisterCorrectionCheckResponse(LogicLevel logicLevel) : base(logicLevel)
         {
             var DATA = logicLevel.response.DATA;
-            if (DATA != null && DATA.Length >= 11)
+            if (DATA != null && DATA.Length >= 10)
             {
                 this.CheckNumber = logicLevel.ConvertFromByteArray.ToShort(DATA.Take(2).XReverse().ToArray());
                 this.FD = logicLevel.ConvertFromByteArray.ToUInt(DATA.Skip(2).Take(4).XReverse().ToArray()).ToString();
                 this.FPD = logicLevel.ConvertFromByteArray.ToUInt(DATA.Skip(6).Take(4).XReverse().ToArray()).ToString();
-                byte[] dt = DATA.Skip(10).Take(5).XReverse().ToArray();
             }
         }
         public short CheckNumber { get; set; } // Номер чека
