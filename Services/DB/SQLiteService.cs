@@ -240,7 +240,7 @@ namespace KKT_APP_FA.Services.DB
             var results = new List<string>();
             try
             {
-                string response_date_time = (dateTimeHelper.GetCurrentDayToUnixTimeSeconds() - 24 * 60 * 60).ToString(); // Текущий день минус сутки
+                string response_date_time = (dateTimeHelper.GetCurrentDayToUnixTimeSeconds() - (24 * 60 * 60 * 5)).ToString(); // Текущий день минус 5 суток
                 List<string> sqls = new List<string>();
                 string table_name = new RegistrationsContext().GetType().Name.Replace("Context", "");
                 string sql = "DELETE FROM " + (table_name + " WHERE [status] = 'done' AND [request_date_time] < " + response_date_time);

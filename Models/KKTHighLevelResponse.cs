@@ -1,4 +1,5 @@
-﻿using KKT_APP_FA.Models.KKTResponse;
+﻿using KKT_APP_FA.Models.API;
+using KKT_APP_FA.Models.KKTResponse;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -55,6 +56,10 @@ namespace KKT_APP_FA.Models
         //public GetKktStatusResponse GetKktStatus { get; set; }
         //public GetRegistrationParametersResponse GetRegistrationParameters { get; set; }
         //public GetFirmwareVersionResponse GetFirmwareVersion { get; set; }
+
+        //=======================================================================================================================================
+
+        public KktInfoFa KktInfoFa; // ответ на GetKktInfo
 
         //=======================================================================================================================================
     }

@@ -666,8 +666,33 @@ namespace KKT_APP_FA.Units
         // 
 
         //==============================================================================================================================================
+        // КОРОТКИЕ ОТЧЕТЫ:
 
-        // Получить номер ФН (в идеале запускать один раз при старте и далее брать из кэша)
+        // Запрос статуса ККТ (0x01) (в идеале запускать один раз при старте и далее брать из кэша)
+        public GetKktStatusResponse GetKktStatus()
+        {
+            logicLevel = new LogicLevel();
+            logicLevel.BuildRequestCommand((byte)CommandEnum.GET_STATUS);
+            var LLResponse = logicLevel.SendRequestCommand();
+            return new GetKktStatusResponse(logicLevel);
+
+        }
+
+        // Запрос заводского номера ККТ 0x02 (не нужно, дублируется с 0x01)
+
+        // Запрос версии ПО ККТ (0x03) (в идеале запускать один раз при старте и далее брать из кэша)
+        public GetFirmwareVersionResponse GetFirmwareVersion()
+        {
+            logicLevel = new LogicLevel();
+            logicLevel.BuildRequestCommand((byte)CommandEnum.GET_FIRMWARE_VERSION);
+            var LLResponse = logicLevel.SendRequestCommand();
+            return new GetFirmwareVersionResponse(logicLevel);
+        }
+
+        // Запрос модели ККТ 0x04
+        // Запрос версии конфигурации ККТ 0x0B
+
+        // Получить номер ФН (0x05) (в идеале запускать один раз при старте и далее брать из кэша)
         public GetFnNumberResponse GetFnNumber()
         {
             logicLevel = new LogicLevel();
@@ -684,17 +709,11 @@ namespace KKT_APP_FA.Units
             }
         }
 
-        // Запрос статуса ККТ (в идеале запускать один раз при старте и далее брать из кэша)
-        public GetKktStatusResponse GetKktStatus()
-        {
-            logicLevel = new LogicLevel();
-            logicLevel.BuildRequestCommand((byte)CommandEnum.GET_STATUS);
-            var LLResponse = logicLevel.SendRequestCommand();
-            return new GetKktStatusResponse(logicLevel);
+        // Запрос версии ПО ФН 0x06
+        // Запрос срока действия ФН 0x07
+        // Запрос статуса ФН 0x08
 
-        }
-
-        // Получение регистрационных параметров ККТ (в идеале запускать один раз при старте и далее брать из кэша)
+        // Запрос текущих параметров регистрации ККТ 0x0A (в идеале запускать один раз при старте и далее брать из кэша)
         public GetRegistrationParametersResponse GetRegistrationParameters()
         {
             logicLevel = new LogicLevel();
@@ -703,14 +722,15 @@ namespace KKT_APP_FA.Units
             return new GetRegistrationParametersResponse(logicLevel);
         }
 
-        // Запрос версии ПО ККТ (в идеале запускать один раз при старте и далее брать из кэша)
-        public GetFirmwareVersionResponse GetFirmwareVersion()
-        {
-            logicLevel = new LogicLevel();
-            logicLevel.BuildRequestCommand((byte)CommandEnum.GET_FIRMWARE_VERSION);
-            var LLResponse = logicLevel.SendRequestCommand();
-            return new GetFirmwareVersionResponse(logicLevel);
-        }
+        // Запрос последних ошибок ФН 0x09 (хз надо ли)
+        // Запрос текущих параметров TCP/IP 0x0E (хз надо ли)
+        // Запрос статуса информационного обмена 0x50
+
+        //==============================================================================================================================================
+        // Длинные отчеты:
+
+        // Запрос итогов активации ФН 0x33
+        // Запрос отчета о регистрации по всет тэгам 0x3B
 
         //==============================================================================================================================================
     }

@@ -5,7 +5,7 @@
         GET_STATUS = 0x01, // Запрос статуса ККТ (0x01)
         GET_SERIAL_NUMBER = 0x02, // Запрос заводского номера ККТ(0x02)
         GET_FIRMWARE_VERSION = 0x03, // Запрос версии ПО ККТ 
-        GET_MODEL = 0x04,
+        GET_MODEL = 0x04, // Запрос модели ККТ 0x04
         GET_FN_NUMBER = 0x05, // Получить номер ФН
         GET_FISCAL_STORAGE_STATUS = 0x08,
         GET_REGISTRATION_PARAMETERS = 0x0A, // Запрос текущих параметров регистрации ККТ

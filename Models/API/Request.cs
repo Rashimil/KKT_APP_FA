@@ -26,6 +26,7 @@ namespace KKT_APP_FA.Models.API
         public Receipt receipt { get; set; }
         public Service service { get; set; }
         public string timestamp { get; set; }
+        public string authomat_number { get; set; } // номер автомата. ТОЛЬКО для ТерминалФА !!!
     }
 
     public class Client
@@ -125,6 +126,7 @@ namespace KKT_APP_FA.Models.API
         public CorrectioN correction { get; set; }
         public Service service { get; set; }
         public string timestamp { get; set; }
+        public string authomat_number { get; set; } // номер автомата. ТОЛЬКО для ТерминалФА !!!
     }
 
     public class CorrectioN

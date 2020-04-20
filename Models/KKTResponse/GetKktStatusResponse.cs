@@ -1,4 +1,5 @@
-﻿using KKT_APP_FA.Extensions;
+﻿using KKT_APP_FA.Enums;
+using KKT_APP_FA.Extensions;
 using KKT_APP_FA.Helpers;
 using System;
 using System.Collections.Generic;
@@ -20,6 +21,8 @@ namespace KKT_APP_FA.Models.KKTResponse
                 this.PrinterStatus = DATA.Skip(18).Take(1).XReverse().ToArray()[0];
                 this.FNConnected = (DATA.Skip(19).Take(1).XReverse().ToArray()[0] == 1) ? true : false;
                 this.FNLifePhase = DATA.Skip(20).Take(1).XReverse().ToArray()[0];
+                FNLifePhaseEnum fnlp = (FNLifePhaseEnum)this.FNLifePhase;
+                this.FNLifePhaseDescription = EnumHelper.GetTypeDescription(fnlp);
                 this.PrinterModel = DATA.Skip(21).Take(1).XReverse().ToArray()[0];
             }
         }
@@ -30,6 +33,7 @@ namespace KKT_APP_FA.Models.KKTResponse
         public byte PrinterStatus { get; set; } // 0 – Корректный статус, бумага присутствует, 1 – Устройство не подключено, 2 – Отсутствует бумага, 3 – Замятие бумаги, 5 – Открыта крышка ПУ, 6 – Ошибка отрезчика ПУ, 7 – Аппаратная ошибка ПУ
         public bool FNConnected { get; set; } // Наличие ФН в ККТ
         public byte FNLifePhase { get; set; } // Фаза жизни ФН
+        public string FNLifePhaseDescription { get; set; } // Фаза жизни ФН (описание)
         public byte PrinterModel { get; set; } // Модель принтера (временно byte)
     }
 }

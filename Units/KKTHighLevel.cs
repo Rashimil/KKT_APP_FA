@@ -100,12 +100,17 @@ namespace KKT_APP_FA.Units
 
             // Получение AutomaticDeviceData:
             AutomaticDeviceData automaticDeviceData = null;
+            string authomat_number = " ";
+            if (!string.IsNullOrEmpty(body.authomat_number))
+            {
+                authomat_number = body.authomat_number;
+            }
             if (Program.IsAutomaticDevice)
             {
                 automaticDeviceData = new AutomaticDeviceData(
                     body.receipt.company.payment_address,
                     "Центр обработки данных",
-                    " " // ХЗ ГДЕ БРАТЬ НОМЕР АВТОМАТА !!!!!!! Этого не было в протоколе атола, надо добавлять!!!!
+                    authomat_number
                     );
             }
 
@@ -576,12 +581,17 @@ namespace KKT_APP_FA.Units
 
             // Получение AutomaticDeviceData:
             AutomaticDeviceData automaticDeviceData = null;
+            string authomat_number = " ";
+            if (!string.IsNullOrEmpty(body.authomat_number))
+            {
+                authomat_number = body.authomat_number;
+            }
             if (Program.IsAutomaticDevice)
             {
                 automaticDeviceData = new AutomaticDeviceData(
                     body.correction.company.payment_address,
                     "Центр обработки данных",
-                    " " // ХЗ ГДЕ БРАТЬ НОМЕР АВТОМАТА !!!!!!! Этого не было в протоколе атола, надо добавлять!!!!
+                    authomat_number
                     );
             }
 
@@ -889,9 +899,9 @@ namespace KKT_APP_FA.Units
         //=======================================================================================================================================
 
         // Получение информации от ККТ. Занимает время 
-        public object GetKktInfo()
+        public KktInfoFa GetKktInfo()
         {
-            return null;
+            KktInfoFa result = new KktInfoFa();
         }
 
         //=======================================================================================================================================

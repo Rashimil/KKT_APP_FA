@@ -107,11 +107,13 @@ namespace KKT_APP_FA.Units
                     else if ((request != null) && (request.operation.ToLower() == "getkktinfo"))
                     {
                         body = null;
+                        FiscalResult = null;
                     }
 
                     else // TODO Если ничего не совпало - вернуть какую ниботь неизвестную ошибку
                     {
                         body = null;
+                        FiscalResult = new KKTHighLevelResponse();
                         FiscalResult.error = true;
                     }
 
