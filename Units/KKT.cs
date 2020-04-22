@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using KKT_APP_FA.Enums;
 using KKT_APP_FA.Helpers;
 using KKT_APP_FA.Models;
+using KKT_APP_FA.Models.API;
 using KKT_APP_FA.Models.KKTRequest;
 using KKT_APP_FA.Models.KKTResponse;
 
@@ -470,6 +471,14 @@ namespace KKT_APP_FA.Units
                 //return null;
                 return new RegisterCheckResponse(logicLevel);
             }
+        }
+
+        //==============================================================================================================================================
+        // Получение информации от ККТ. Занимает время 
+        public KktInfoFa GetKktInfo()
+        {
+            KktInfoFa result = new KktInfoFa();
+            //return null;
         }
 
         //==============================================================================================================================================

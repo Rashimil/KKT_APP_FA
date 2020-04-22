@@ -902,6 +902,7 @@ namespace KKT_APP_FA.Units
         public KktInfoFa GetKktInfo()
         {
             KktInfoFa result = new KktInfoFa();
+            //return null;
         }
 
         //=======================================================================================================================================
