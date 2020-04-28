@@ -474,10 +474,29 @@ namespace KKT_APP_FA.Units
         }
 
         //==============================================================================================================================================
+
         // Получение информации от ККТ. Занимает время 
         public KktInfoFa GetKktInfo()
         {
+            logicLevel = new LogicLevel();
             KktInfoFa result = new KktInfoFa();
+            LogicLevelResponse LLResponse;
+
+            // Запрос статуса ККТ (0x01):
+            GetKktStatusResponse getKktStatusResponse = GetKktStatus();
+            result.Set0x01(getKktStatusResponse);
+
+            // Запрос заводского номера ККТ (0x02) (не нужно, дублируется с 0x01)
+
+            // Запрос версии ПО ККТ (0x03)
+            GetFirmwareVersionResponse getFirmwareVersionResponse = GetFirmwareVersion();
+
+
+
+            //logicLevel.BuildRequestCommand((byte)CommandEnum.GET_STATUS);
+            //LLResponse = logicLevel.SendRequestCommand();
+
+
             //return null;
         }
 

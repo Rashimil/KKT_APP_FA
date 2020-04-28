@@ -1,4 +1,6 @@
-﻿using KKT_APP_FA.Helpers;
+﻿using KKT_APP_FA.Extensions;
+using KKT_APP_FA.Helpers;
+using KKT_APP_FA.Models.KKTResponse;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -10,8 +12,27 @@ namespace KKT_APP_FA.Models.API
 {
     // Информация о ККТ, подогнанная под ФА. Возврашается в таком виде к AdminApp. 
     // Требует доработки на стороне AdminApp
-    public class KktInfoFa
+    public class KktInfoFa    
     {
+        // Установка статуса ККТ (0x01):
+        public void Set0x01(GetKktStatusResponse r) 
+        {
+            this.KKTFactoryNumber = r.KKTFactoryNumber;
+            this.KKTDateTime = r.KKTDateTime;
+            this.HasCriticalError = r.HasCriticalError;
+            this.PrinterStatus = r.PrinterStatus;
+            this.FNConnected = r.FNConnected;
+            this.FNLifePhase = r.FNLifePhase;
+            this.FNLifePhaseDescription = r.FNLifePhaseDescription;
+        }
+
+        public void Set0x03(GetFirmwareVersionResponse r)
+        {
+            this.FirmwareVersion = r.FirmwareVersion;
+        }
+
+
+
         //[Description("Заводской номер ККТ")]
 
         // (0x01)
@@ -20,14 +41,14 @@ namespace KKT_APP_FA.Models.API
         public bool HasCriticalError { get; set; } // Критические ошибки в ККТ. false – ошибок нет, true – присутствуют
         public byte PrinterStatus { get; set; } // 0 – Корректный статус, бумага присутствует, 1 – Устройство не подключено, 2 – Отсутствует бумага, 3 – Замятие бумаги, 5 – Открыта крышка ПУ, 6 – Ошибка отрезчика ПУ, 7 – Аппаратная ошибка ПУ
         public bool FNConnected { get; set; } // Наличие ФН в ККТ
-        //public byte FNLifePhase { get; set; } // Фаза жизни ФН (FNLifePhaseEnum)  НЕ НУЖНО, ЕСТЬ В 0x08
-        //public string FNLifePhaseDescription { get; set; } // Фаза жизни ФН (описание) (FNLifePhaseEnum)
+        public byte FNLifePhase { get; set; } // Фаза жизни ФН 
+        public string FNLifePhaseDescription { get; set; } // Фаза жизни ФН (описание) (FNLifePhaseEnum)
 
         // 0x02 (не нужно, дублируется с 0x01)
 
         // (0x03)
         public string FirmwareVersion { get; set; } // версия прошивки ККТ
-         
+
         // (0x04)
         public string KKTModel { get; set; } // модель ККТ 
 
@@ -43,8 +64,8 @@ namespace KKT_APP_FA.Models.API
         public byte ReRegistrationsCount { get; set; } // Проведено перерегистраций
 
         // 0x08 Запрос статуса ФН
-        public byte FNLifePhase { get; set; } // Фаза жизни ФН (FNLifePhaseEnum) 
-        public string FNLifePhaseDescription { get; set; } // Фаза жизни ФН (описание) (FNLifePhaseEnum)
+        //public byte FNLifePhase { get; set; } // Фаза жизни ФН (FNLifePhaseEnum)  НЕ НУЖНО, ЕСТЬ В 0x01
+        // public string FNLifePhaseDescription { get; set; } // Фаза жизни ФН (описание) (FNLifePhaseEnum)   НЕ НУЖНО, ЕСТЬ В 0x01
         public byte CurrentDocument { get; set; } // Текущий документ (CurrentDocumentEnum)
         public byte CurrentDocumentDescription { get; set; } // Текущий документ (описание) (CurrentDocumentEnum)
         public bool DocumentDataReceived { get; set; } // Данные документа. В оригинале byte
