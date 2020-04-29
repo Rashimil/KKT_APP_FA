@@ -25,7 +25,9 @@ namespace KKT_APP_FA.Services.Helpers
         }
 
         //=======================================================================================================================================
-        public long ConvertToUnixTimeMilliseconds(DateTime date_time) // Конвертация timestamp в unixtime
+
+        // Конвертация timestamp в unixtime (милисекунды)
+        public long ConvertToUnixTimeMilliseconds(DateTime date_time) 
         {
             var date = date_time;
             DateTime origin = new DateTime(1970, 1, 1, timezone_shift, 0, 0, DateTimeKind.Utc);
@@ -41,7 +43,9 @@ namespace KKT_APP_FA.Services.Helpers
         }
 
         //=======================================================================================================================================
-        public int ConvertToUnixTimeSeconds(DateTime date_time) // Конвертация timestamp в unixtime
+
+        // // Конвертация timestamp в unixtime (секунды)
+        public int ConvertToUnixTimeSeconds(DateTime date_time) 
         {
             var date = date_time;
             DateTime origin = new DateTime(1970, 1, 1, timezone_shift, 0, 0, DateTimeKind.Utc);
@@ -57,7 +61,9 @@ namespace KKT_APP_FA.Services.Helpers
         }
 
         //=======================================================================================================================================
-        public int ConvertToUnixTimeSeconds(string date_time) // Конвертация строкового timestamp (01.11.2018 12:18:00) в unixtime
+
+        // Конвертация строкового timestamp (01.11.2018 12:18:00) в unixtime
+        public int ConvertToUnixTimeSeconds(string date_time) 
         {
             try
             {
@@ -83,7 +89,9 @@ namespace KKT_APP_FA.Services.Helpers
         }
 
         //=======================================================================================================================================
-        public long GetCurrentDayToUnixTimeSeconds() // Возвращает текущий день в unixtime
+
+        // Возвращает текущий день в unixtime
+        public long GetCurrentDayToUnixTimeSeconds() 
         {
             DateTime date = new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day, timezone_shift, 0, 0, DateTimeKind.Utc);
             DateTime origin = new DateTime(1970, 1, 1, timezone_shift, 0, 0, DateTimeKind.Utc);
@@ -99,7 +107,9 @@ namespace KKT_APP_FA.Services.Helpers
         }
 
         //=======================================================================================================================================
-        public string DateToFolderName(DateTime dateTime) // Возвращает дату в пригодном для наименования папки формате
+
+        // Возвращает дату в пригодном для наименования папки формате
+        public string DateToFolderName(DateTime dateTime) 
         {
             //var date_time = DateTime.UtcNow.AddHours(timezone_shift);
             var date_time = dateTime;

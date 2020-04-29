@@ -7,6 +7,8 @@
         GET_FIRMWARE_VERSION = 0x03, // Запрос версии ПО ККТ 
         GET_MODEL = 0x04, // Запрос модели ККТ 0x04
         GET_FN_NUMBER = 0x05, // Получить номер ФН
+        GET_FN_FIRMWARE_VERSION = 0x06, // Запрос версии ПО ФН (0x06)
+        GET_FN_EXPIRED = 0x07, // Запрос срока действия ФН (0x07)
         GET_FISCAL_STORAGE_STATUS = 0x08,
         GET_REGISTRATION_PARAMETERS = 0x0A, // Запрос текущих параметров регистрации ККТ
         CANCEL_FISCAL_DOCUMENT = 0x10, // Отменяет любой начатый фискальный документ. Все данные, введенные с помощью команды "Передать данные документа" удаляются

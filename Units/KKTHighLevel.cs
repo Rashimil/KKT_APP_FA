@@ -901,8 +901,8 @@ namespace KKT_APP_FA.Units
         // Получение информации от ККТ. Занимает время 
         public KktInfoFa GetKktInfo()
         {
-            KktInfoFa result = new KktInfoFa();
-            //return null;
+            KktInfoFa result = kkt.GetKktInfo();
+            return result;
         }
 
         //=======================================================================================================================================

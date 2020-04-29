@@ -480,16 +480,38 @@ namespace KKT_APP_FA.Units
         {
             logicLevel = new LogicLevel();
             KktInfoFa result = new KktInfoFa();
-            LogicLevelResponse LLResponse;
+            byte[] DATA;
+            //LogicLevelResponse LLResponse;
 
             // Запрос статуса ККТ (0x01):
             GetKktStatusResponse getKktStatusResponse = GetKktStatus();
             result.Set0x01(getKktStatusResponse);
 
-            // Запрос заводского номера ККТ (0x02) (не нужно, дублируется с 0x01)
+            // Запрос заводского номера ККТ (0x02) 
+            // (не нужно, дублируется с 0x01)
 
             // Запрос версии ПО ККТ (0x03)
             GetFirmwareVersionResponse getFirmwareVersionResponse = GetFirmwareVersion();
+            result.Set0x03(getFirmwareVersionResponse);
+
+            // Запрос модели ККТ (0x04)
+            logicLevel.BuildRequestCommand((byte)CommandEnum.GET_MODEL);
+            logicLevel.SendRequestCommand();
+            result.Set0x04(logicLevel);
+
+            // Запрос заводского номера ФН(0x05)
+            GetFnNumberResponse getFnNumberResponse = GetFnNumber();
+            result.Set0x05(getFnNumberResponse);
+
+            // Запрос версии ПО ФН (0x06)
+            logicLevel.BuildRequestCommand((byte)CommandEnum.GET_FN_FIRMWARE_VERSION);
+            logicLevel.SendRequestCommand();
+            result.Set0x06(logicLevel);
+
+            // Запрос срока действия ФН (0x07)
+            logicLevel.BuildRequestCommand((byte)CommandEnum.GET_FN_EXPIRED);
+            logicLevel.SendRequestCommand();
+            result.Set0x07(logicLevel);
 
 
 
@@ -497,7 +519,7 @@ namespace KKT_APP_FA.Units
             //LLResponse = logicLevel.SendRequestCommand();
 
 
-            //return null;
+            return result;
         }
 
         //==============================================================================================================================================

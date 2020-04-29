@@ -1,4 +1,5 @@
-﻿using KKT_APP_FA.Extensions;
+﻿using KKT_APP_FA.Enums;
+using KKT_APP_FA.Extensions;
 using KKT_APP_FA.Helpers;
 using KKT_APP_FA.Models.KKTResponse;
 using System;
@@ -8,14 +9,14 @@ using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace KKT_APP_FA.Models.API
+namespace KKT_APP_FA.Models.API         //[Description("Заводской номер ККТ")]
 {
     // Информация о ККТ, подогнанная под ФА. Возврашается в таком виде к AdminApp. 
     // Требует доработки на стороне AdminApp
-    public class KktInfoFa    
+    public class KktInfoFa
     {
         // Установка статуса ККТ (0x01):
-        public void Set0x01(GetKktStatusResponse r) 
+        public void Set0x01(GetKktStatusResponse r)
         {
             this.KKTFactoryNumber = r.KKTFactoryNumber;
             this.KKTDateTime = r.KKTDateTime;
@@ -26,14 +27,74 @@ namespace KKT_APP_FA.Models.API
             this.FNLifePhaseDescription = r.FNLifePhaseDescription;
         }
 
+        // Установка версии ПО ККТ (0x03)
         public void Set0x03(GetFirmwareVersionResponse r)
         {
             this.FirmwareVersion = r.FirmwareVersion;
         }
 
+        // Установка модели ККТ (0x04)
+        public void Set0x04(LogicLevel logicLevel)
+        {
+            var DATA = logicLevel.response.DATA;
+            if (DATA != null && DATA.Length > 0)
+            {
+                this.KKTModel = logicLevel.ConvertFromByteArray.ToString(DATA.XReverse().ToArray());
+            }
+        }
+
+        // Установка заводского номера ФН (0x05) 
+        public void Set0x05(GetFnNumberResponse r)
+        {
+            this.FN = r.FN;
+        }
+
+        // Установка версии ПО ФН (0x06)
+        public void Set0x06(LogicLevel logicLevel)
+        {
+            var DATA = logicLevel.response.DATA;
+            if (DATA != null && DATA.Length > 0)
+            {
+                this.FNFirmwareVersion = logicLevel.ConvertFromByteArray.ToString(DATA.XReverse().ToArray());
+            }
+        }
+
+        // Установка срока действия ФН (0x07)
+        public void Set0x07(LogicLevel logicLevel)
+        {
+            var DATA = logicLevel.response.DATA.XReverse().ToArray(); // на всякий тут
+            if (DATA != null && DATA.Length >= 5)
+            {
+                string yyyy = (2000 + logicLevel.ConvertFromByteArray.ToByte(new byte[] { DATA[0] })).ToString();
+                string mm = logicLevel.ConvertFromByteArray.ToByte(new byte[] { DATA[1] }).ToString();
+                string dd = logicLevel.ConvertFromByteArray.ToByte(new byte[] { DATA[2] }).ToString();
+                this.FNValidityTime = Fix(dd) + "." + Fix(mm) + "." + yyyy;
+                this.ReRegistrationsAvialable = logicLevel.ConvertFromByteArray.ToByte(new byte[] { DATA[3] });
+                this.ReRegistrationsCount = logicLevel.ConvertFromByteArray.ToByte(new byte[] { DATA[4] });
+            }
+        }
+
+        // Запрос статуса ФН (0x08)
+        public void Set0x08(LogicLevel logicLevel)
+        {
+            var DATA = logicLevel.response.DATA.XReverse().ToArray(); // на всякий тут
+            if (DATA != null && DATA.Length >= 27)
+            {
+                this.CurrentDocument = DATA[1];
+                this.CurrentDocumentDescription = EnumHelper.GetTypeDescription((CurrentDocumentEnum)CurrentDocument);
+                if (DATA[2] == 0) { this.DocumentDataReceived = false; } else { this.DocumentDataReceived = true; }
+                if (DATA[3] == 0) { this.ShiftOpened = false; } else { this.ShiftOpened = true; }
+                this.FNFlags = 
+            }
 
 
-        //[Description("Заводской номер ККТ")]
+            //public byte FNFlags { get; set; } // флаги состояния ФН (FNFlagsEnum)
+            //public string FNFlagsDescription { get; set; } //  флаги состояния ФН (описание). Может быть несколько, надо проверять через логическое умножение с FNFlagsEnum (см тестовое приложение) 
+
+            //public string LastDocumentDateTime { get; set; } // 
+            //public string FN { get; set; } // номер ФН
+            //public string LastFD { get; set; } // Номер последнего ФД
+        }
 
         // (0x01)
         public string KKTFactoryNumber { get; set; } // заводской номер ККТ
@@ -67,7 +128,7 @@ namespace KKT_APP_FA.Models.API
         //public byte FNLifePhase { get; set; } // Фаза жизни ФН (FNLifePhaseEnum)  НЕ НУЖНО, ЕСТЬ В 0x01
         // public string FNLifePhaseDescription { get; set; } // Фаза жизни ФН (описание) (FNLifePhaseEnum)   НЕ НУЖНО, ЕСТЬ В 0x01
         public byte CurrentDocument { get; set; } // Текущий документ (CurrentDocumentEnum)
-        public byte CurrentDocumentDescription { get; set; } // Текущий документ (описание) (CurrentDocumentEnum)
+        public string CurrentDocumentDescription { get; set; } // Текущий документ (описание) (CurrentDocumentEnum)
         public bool DocumentDataReceived { get; set; } // Данные документа. В оригинале byte
         public bool ShiftOpened { get; set; } // Данные смены. В оригинале byte
 
@@ -82,7 +143,7 @@ namespace KKT_APP_FA.Models.API
 
         // (0x09) Описание отсутствует в доке
 
-        // (0x0A) Запрос текущих параметров регистрации ККТ
+        // (0x0A) Запрос текущих параметров регистрации ККТ (можно номер документа брать равным полю ReRegistrationsCount)
         public string KKTRegistrationNumber { get; set; } // РН ККТ. Дополняется пробелами справа до длины 20 символов
         public string INN { get; set; } // ИНН. Дополняется пробелами справа до длины 12 символов
         public byte KKTOperatingMode { get; set; } // Режимы работы ККТ. Временно byte. Битовая маска
@@ -106,5 +167,14 @@ namespace KKT_APP_FA.Models.API
         public int OFDFirstDocumentNumber { get; set; } // Номер первого в очереди документа для ОФД
         public string OFDFirstDocumentDateTime { get; set; } // Дата-время первого в очереди документа для ОФД
 
+        // Служебный метод для вывода красивых дат
+        private string Fix(string num)
+        {
+            if (num.Length == 1)
+            {
+                num = "0" + num;
+            }
+            return num;
+        }
     }
 }
