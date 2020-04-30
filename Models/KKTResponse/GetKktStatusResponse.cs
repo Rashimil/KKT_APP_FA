@@ -32,7 +32,7 @@ namespace KKT_APP_FA.Models.KKTResponse
         public bool HasCriticalError { get; set; } // Критические ошибки в ККТ. false – ошибок нет, true – присутствуют
         public byte PrinterStatus { get; set; } // 0 – Корректный статус, бумага присутствует, 1 – Устройство не подключено, 2 – Отсутствует бумага, 3 – Замятие бумаги, 5 – Открыта крышка ПУ, 6 – Ошибка отрезчика ПУ, 7 – Аппаратная ошибка ПУ
         public bool FNConnected { get; set; } // Наличие ФН в ККТ
-        public byte FNLifePhase { get; set; } // Фаза жизни ФН
+        public byte FNLifePhase надо переделать, ибо смотреть порядок бит, их может быть несколько { get; set; } // Фаза жизни ФН
         public string FNLifePhaseDescription { get; set; } // Фаза жизни ФН (описание)
         public byte PrinterModel { get; set; } // Модель принтера (временно byte)
     }

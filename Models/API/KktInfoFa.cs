@@ -2,6 +2,7 @@
 using KKT_APP_FA.Extensions;
 using KKT_APP_FA.Helpers;
 using KKT_APP_FA.Models.KKTResponse;
+using KKT_APP_FA.Services.Helpers;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -15,6 +16,13 @@ namespace KKT_APP_FA.Models.API         //[Description("Заводской но�
     // Требует доработки на стороне AdminApp
     public class KktInfoFa
     {
+        FlagsHelper flagsHelper;
+        ReflectionHelper reflectionHelper;
+        public KktInfoFa()
+        {
+            this.flagsHelper = new FlagsHelper();
+            this.reflectionHelper = new ReflectionHelper();
+        }
         // Установка статуса ККТ (0x01):
         public void Set0x01(GetKktStatusResponse r)
         {
@@ -74,7 +82,7 @@ namespace KKT_APP_FA.Models.API         //[Description("Заводской но�
             }
         }
 
-        // Запрос статуса ФН (0x08)
+        // Установка статуса ФН (0x08)
         public void Set0x08(LogicLevel logicLevel)
         {
             var DATA = logicLevel.response.DATA.XReverse().ToArray(); // на всякий тут
@@ -84,12 +92,30 @@ namespace KKT_APP_FA.Models.API         //[Description("Заводской но�
                 this.CurrentDocumentDescription = EnumHelper.GetTypeDescription((CurrentDocumentEnum)CurrentDocument);
                 if (DATA[2] == 0) { this.DocumentDataReceived = false; } else { this.DocumentDataReceived = true; }
                 if (DATA[3] == 0) { this.ShiftOpened = false; } else { this.ShiftOpened = true; }
-                this.FNFlags = 
+                this.FNFlags = DATA[4];
+                //this.FNFlags = 0x7;
+                if (FNFlags == (byte)FNFlagsEnum.None)
+                {
+                    this.FNFlagsDescription = EnumHelper.GetTypeDescription((FNFlagsEnum)FNFlags);
+                }
+                else
+                {
+                    byte a = FNFlags;
+                    foreach (var item in Enum.GetValues(typeof(FNFlagsEnum))) // цикл по полям enum
+                    {
+                        if ((FNFlagsEnum)item != FNFlagsEnum.None)
+                        {
+                            int r = a & (byte)(FNFlagsEnum)item; // 
+                            if (r != 0)
+                            {
+                                this.FNFlagsDescription += (EnumHelper.GetTypeDescription((FNFlagsEnum)item) + ", ");
+                            }
+                        }
+                    }
+                    FNFlagsDescription = FNFlagsDescription.Remove(FNFlagsDescription.Length - 2);
+                }s
+                this.LastDocumentDateTime = logicLevel.ConvertFromByteArray.ToDateTime(DATA.Skip(5).Take(5).ToArray()).ToString("");
             }
-
-
-            //public byte FNFlags { get; set; } // флаги состояния ФН (FNFlagsEnum)
-            //public string FNFlagsDescription { get; set; } //  флаги состояния ФН (описание). Может быть несколько, надо проверять через логическое умножение с FNFlagsEnum (см тестовое приложение) 
 
             //public string LastDocumentDateTime { get; set; } // 
             //public string FN { get; set; } // номер ФН

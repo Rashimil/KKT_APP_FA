@@ -53,6 +53,8 @@ namespace KKT_APP_FA
             // Singleton сервисы:
             services.AddSingleton<ILoggerHelper, LoggerHelper>();
             services.AddSingleton<ICRC32, CRC32>();
+            services.AddSingleton<FlagsHelper>();
+            services.AddSingleton<ReflectionHelper>();
             //services.AddSingleton<MainCycle>();
 
             // Дефолтные сервисы:

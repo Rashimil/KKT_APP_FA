@@ -513,7 +513,10 @@ namespace KKT_APP_FA.Units
             logicLevel.SendRequestCommand();
             result.Set0x07(logicLevel);
 
-
+            // Запрос статуса ФН (0x08)
+            logicLevel.BuildRequestCommand((byte)CommandEnum.GET_FISCAL_STORAGE_STATUS);
+            logicLevel.SendRequestCommand();
+            result.Set0x08(logicLevel);
 
             //logicLevel.BuildRequestCommand((byte)CommandEnum.GET_STATUS);
             //LLResponse = logicLevel.SendRequestCommand();
