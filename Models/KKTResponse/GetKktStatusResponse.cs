@@ -21,8 +21,24 @@ namespace KKT_APP_FA.Models.KKTResponse
                 this.PrinterStatus = DATA.Skip(18).Take(1).XReverse().ToArray()[0];
                 this.FNConnected = (DATA.Skip(19).Take(1).XReverse().ToArray()[0] == 1) ? true : false;
                 this.FNLifePhase = DATA.Skip(20).Take(1).XReverse().ToArray()[0];
-                FNLifePhaseEnum fnlp = (FNLifePhaseEnum)this.FNLifePhase;
-                this.FNLifePhaseDescription = EnumHelper.GetTypeDescription(fnlp);
+                //FNLifePhaseEnum fnlp = (FNLifePhaseEnum)this.FNLifePhase;
+                //this.FNLifePhaseDescription = EnumHelper.GetTypeDescription(fnlp);
+
+                byte a = FNLifePhase;
+                var EnumValues = Enum.GetValues(typeof(FNLifePhaseEnum));
+                //var EnumValues = Enum.GetValues(typeof(FNLifePhaseEnum)).Cast<byte>().ToList().OrderBy(c=>c);
+                foreach (var item in EnumValues) // цикл по полям enum
+                {
+                    var b = (byte)(FNLifePhaseEnum)item;
+                    int r = a & b; // 
+                    if (r != 0 && r == b) // если есть пересечение и результат = item
+                    {
+                        this.FNLifePhaseDescription += (EnumHelper.GetTypeDescription((FNLifePhaseEnum)item) + ", ");
+                    }
+
+                }
+                FNLifePhaseDescription = FNLifePhaseDescription.Remove(FNLifePhaseDescription.Length - 2);
+
                 this.PrinterModel = DATA.Skip(21).Take(1).XReverse().ToArray()[0];
             }
         }
@@ -32,7 +48,7 @@ namespace KKT_APP_FA.Models.KKTResponse
         public bool HasCriticalError { get; set; } // Критические ошибки в ККТ. false – ошибок нет, true – присутствуют
         public byte PrinterStatus { get; set; } // 0 – Корректный статус, бумага присутствует, 1 – Устройство не подключено, 2 – Отсутствует бумага, 3 – Замятие бумаги, 5 – Открыта крышка ПУ, 6 – Ошибка отрезчика ПУ, 7 – Аппаратная ошибка ПУ
         public bool FNConnected { get; set; } // Наличие ФН в ККТ
-        public byte FNLifePhase надо переделать, ибо смотреть порядок бит, их может быть несколько { get; set; } // Фаза жизни ФН
+        public byte FNLifePhase /*надо переделать, ибо смотреть порядок бит, их может быть несколько*/ { get; set; } // Фаза жизни ФН
         public string FNLifePhaseDescription { get; set; } // Фаза жизни ФН (описание)
         public byte PrinterModel { get; set; } // Модель принтера (временно byte)
     }

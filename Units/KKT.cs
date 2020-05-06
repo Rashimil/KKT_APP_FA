@@ -518,6 +518,14 @@ namespace KKT_APP_FA.Units
             logicLevel.SendRequestCommand();
             result.Set0x08(logicLevel);
 
+            // (0x09) Описание отсутствует в доке
+
+            // Запрос текущих параметров регистрации ККТ (0x0A)
+            logicLevel.BuildRequestCommand((byte)CommandEnum.GET_REGISTRATION_PARAMETERS);
+            logicLevel.SendRequestCommand();
+            result.Set0x0A(logicLevel);
+
+
             //logicLevel.BuildRequestCommand((byte)CommandEnum.GET_STATUS);
             //LLResponse = logicLevel.SendRequestCommand();
 

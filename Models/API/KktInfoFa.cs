@@ -23,6 +23,7 @@ namespace KKT_APP_FA.Models.API         //[Description("Заводской но�
             this.flagsHelper = new FlagsHelper();
             this.reflectionHelper = new ReflectionHelper();
         }
+
         // Установка статуса ККТ (0x01):
         public void Set0x01(GetKktStatusResponse r)
         {
@@ -105,26 +106,110 @@ namespace KKT_APP_FA.Models.API         //[Description("Заводской но�
                     {
                         if ((FNFlagsEnum)item != FNFlagsEnum.None)
                         {
-                            int r = a & (byte)(FNFlagsEnum)item; // 
-                            if (r != 0)
+                            var b = (byte)(FNFlagsEnum)item;
+                            int r = a & b; // 
+                            if (r != 0 && r == b) // если есть пересечение и результат = item
                             {
                                 this.FNFlagsDescription += (EnumHelper.GetTypeDescription((FNFlagsEnum)item) + ", ");
                             }
                         }
                     }
-                    FNFlagsDescription = FNFlagsDescription.Remove(FNFlagsDescription.Length - 2);
-                }s
-                this.LastDocumentDateTime = logicLevel.ConvertFromByteArray.ToDateTime(DATA.Skip(5).Take(5).ToArray()).ToString("");
+                    if (!string.IsNullOrEmpty(FNFlagsDescription) && FNFlagsDescription.Length >= 2)
+                        FNFlagsDescription = FNFlagsDescription.Remove(FNFlagsDescription.Length - 2);
+                }
+                this.LastDocumentDateTime = logicLevel.ConvertFromByteArray.ToDateTime(DATA.Skip(5).Take(5).ToArray()).ToString("dd.MM.yyyy HH:mm:ss");
             }
-
-            //public string LastDocumentDateTime { get; set; } // 
-            //public string FN { get; set; } // номер ФН
-            //public string LastFD { get; set; } // Номер последнего ФД
+            string yyyy = (2000 + logicLevel.ConvertFromByteArray.ToByte(new byte[] { DATA[5] })).ToString();
+            string mm = logicLevel.ConvertFromByteArray.ToByte(new byte[] { DATA[6] }).ToString();
+            string dd = logicLevel.ConvertFromByteArray.ToByte(new byte[] { DATA[7] }).ToString();
+            string hour = logicLevel.ConvertFromByteArray.ToByte(new byte[] { DATA[8] }).ToString();
+            string min = logicLevel.ConvertFromByteArray.ToByte(new byte[] { DATA[9] }).ToString();
+            this.LastDocumentDateTime = Fix(dd) + "." + Fix(mm) + "." + yyyy + " " + hour + ":" + Fix(min) + ":00";
+            this.LastFD = logicLevel.ConvertFromByteArray.ToInt(DATA.Skip(26).XReverse().ToArray()).ToString();
         }
+
+        // Осталось:
+        // Установка текущих параметров регистрации ККТ (0x0A)
+        public void Set0x0A(LogicLevel logicLevel)
+        {
+            var DATA = logicLevel.response.DATA.XReverse().ToArray(); // на всякий тут
+            if (DATA != null && DATA.Length >= 35)
+            {
+                this.KKTRegistrationNumber = logicLevel.ConvertFromByteArray.ToString(DATA.Take(20).ToArray());
+                this.INN = logicLevel.ConvertFromByteArray.ToString(DATA.Skip(20).Take(12).ToArray());
+                this.KKTOperatingMode = DATA.Skip(32).Take(1).ToArray()[0];
+                byte a = KKTOperatingMode;
+                foreach (var item in Enum.GetValues(typeof(KKTOperatingModeEnum))) // цикл по полям enum
+                {
+
+                    var b = (byte)(KKTOperatingModeEnum)item;
+                    int r = a & b; // 
+                    if (r != 0 && r == b) // если есть пересечение и результат = item
+                    {
+                        this.KKTOperatingModeDescription += (EnumHelper.GetTypeDescription((KKTOperatingModeEnum)item) + ", ");
+                    }
+                }
+                if (!string.IsNullOrEmpty(KKTOperatingModeDescription) && KKTOperatingModeDescription.Length >= 2)
+                    KKTOperatingModeDescription = KKTOperatingModeDescription.Remove(KKTOperatingModeDescription.Length - 2);
+
+                this.TaxTypes = DATA.Skip(33).Take(1).ToArray()[0];
+                a = TaxTypes;
+                foreach (var item in Enum.GetValues(typeof(TaxTypeEnum))) // цикл по полям enum
+                {
+
+                    var b = (byte)(TaxTypeEnum)item;
+                    int r = a & b; // 
+                    if (r != 0 && r == b) // если есть пересечение и результат = item
+                    {
+                        this.TaxTypesDescription += (EnumHelper.GetTypeDescription((TaxTypeEnum)item) + ", ");
+                    }
+                }
+                if (!string.IsNullOrEmpty(TaxTypesDescription) && TaxTypesDescription.Length >= 2)
+                    TaxTypesDescription = TaxTypesDescription.Remove(TaxTypesDescription.Length - 2);
+
+                this.AgentType = DATA.Skip(34).Take(1).ToArray()[0];
+                if (AgentType == (byte)AgentEnum.None)
+                {
+                    this.AgentTypeDescription = EnumHelper.GetTypeDescription((AgentEnum)AgentType);
+                }
+                else
+                {
+                    a = AgentType;
+                    foreach (var item in Enum.GetValues(typeof(AgentEnum))) // цикл по полям enum
+                    {
+
+                        var b = (byte)(AgentEnum)item;
+                        int r = a & b; // 
+                        if (r != 0 && r == b) // если есть пересечение и результат = item
+                        {
+                            this.AgentTypeDescription += (EnumHelper.GetTypeDescription((AgentEnum)item) + ", ");
+                        }
+                    }
+                    if (!string.IsNullOrEmpty(AgentTypeDescription) && AgentTypeDescription.Length >= 2)
+                        AgentTypeDescription = AgentTypeDescription.Remove(AgentTypeDescription.Length - 2);
+                }
+            }
+        }
+
+        //// (0x0B) Установка версии конфигурации ККТ
+        //public string KKTConfigurationVersion { get; set; } //
+
+        //// 0x0E Установка текущих параметров TCP/IP
+        //public string KKTIP { get; set; }
+        //public string KKTNetworkMask { get; set; }
+        //public string KKTGateWay { get; set; }
+
+        //// 0x50 Установка статуса информационного обмена с ОФД
+        //public byte InformationExchangeStatus { get; set; } // Служебный параметр
+        //public byte OFDMessageReadingStatus { get; set; } // Служебный параметр
+        //public int OFDMessageCount { get; set; } // Количество сообщений для передачи в ОФД
+        //public int OFDFirstDocumentNumber { get; set; } // Номер первого в очереди документа для ОФД
+        //public string OFDFirstDocumentDateTime { get; set; } // Дата-время первого в очереди документа для ОФД
+        // и всё
 
         // (0x01)
         public string KKTFactoryNumber { get; set; } // заводской номер ККТ
-        public string KKTDateTime { get; set; } // Дат и время ККТ // TODO ToString(yyyyMMddHHmmss)
+        public string KKTDateTime { get; set; } // Дата и время ККТ // TODO ToString(yyyyMMddHHmmss)
         public bool HasCriticalError { get; set; } // Критические ошибки в ККТ. false – ошибок нет, true – присутствуют
         public byte PrinterStatus { get; set; } // 0 – Корректный статус, бумага присутствует, 1 – Устройство не подключено, 2 – Отсутствует бумага, 3 – Замятие бумаги, 5 – Открыта крышка ПУ, 6 – Ошибка отрезчика ПУ, 7 – Аппаратная ошибка ПУ
         public bool FNConnected { get; set; } // Наличие ФН в ККТ
@@ -173,10 +258,11 @@ namespace KKT_APP_FA.Models.API         //[Description("Заводской но�
         public string KKTRegistrationNumber { get; set; } // РН ККТ. Дополняется пробелами справа до длины 20 символов
         public string INN { get; set; } // ИНН. Дополняется пробелами справа до длины 12 символов
         public byte KKTOperatingMode { get; set; } // Режимы работы ККТ. Временно byte. Битовая маска
+        public string KKTOperatingModeDescription { get; set; } // Описание режимов работы ККТ. М/б несколько
         public byte TaxTypes { get; set; } // Режимы налогообложения. Битовая маска
-        public byte TaxTypesDescription { get; set; } // Режимы налогообложения (расшифровка). Может быть несколько, надо проверять через логическое умножение с TaxTypEnum
+        public string TaxTypesDescription { get; set; } // Режимы налогообложения (расшифровка). Может быть несколько, надо проверять через логическое умножение с TaxTypEnum
         public byte AgentType { get; set; } // Признак платежного агента. Битовая маска
-        public byte AgentTypeDescription { get; set; } // Признак платежного агента (расшифровка). Может быть несколько, надо проверять через логическое умножение с AgentEnum
+        public string AgentTypeDescription { get; set; } // Признак платежного агента (расшифровка). Может быть несколько, надо проверять через логическое умножение с AgentEnum
 
         // (0x0B) Запрос версии конфигурации ККТ
         public string KKTConfigurationVersion { get; set; } //
