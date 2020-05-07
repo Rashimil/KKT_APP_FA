@@ -480,7 +480,7 @@ namespace KKT_APP_FA.Units
         {
             logicLevel = new LogicLevel();
             KktInfoFa result = new KktInfoFa();
-            byte[] DATA;
+            //byte[] DATA;
             //LogicLevelResponse LLResponse;
 
             // Запрос статуса ККТ (0x01):
@@ -525,10 +525,21 @@ namespace KKT_APP_FA.Units
             logicLevel.SendRequestCommand();
             result.Set0x0A(logicLevel);
 
+            // Запрос версии конфигурации ККТ (0x0B)
+            logicLevel.BuildRequestCommand((byte)CommandEnum.GET_KKT_CONFIGURATION_VERSION);
+            logicLevel.SendRequestCommand();
+            result.Set0x0B(logicLevel);
 
-            //logicLevel.BuildRequestCommand((byte)CommandEnum.GET_STATUS);
-            //LLResponse = logicLevel.SendRequestCommand();
 
+            // Запрос текущих параметров TCP/IP (0x0E)
+            logicLevel.BuildRequestCommand((byte)CommandEnum.GET_TCP_IP_PARAMS);
+            logicLevel.SendRequestCommand();
+            result.Set0x0E(logicLevel);
+
+            // Запрос статуса информационного обмена с ОФД (0x50) 
+            logicLevel.BuildRequestCommand((byte)CommandEnum.GET_OFD_INFORMATION_EXCHANGE_STATUS);
+            logicLevel.SendRequestCommand();
+            result.Set0x50(logicLevel);
 
             return result;
         }
@@ -729,7 +740,7 @@ namespace KKT_APP_FA.Units
         //==============================================================================================================================================
         // КОРОТКИЕ ОТЧЕТЫ:
 
-        // Запрос статуса ККТ (0x01) (в идеале запускать один раз при старте и далее брать из кэша)
+        // Запрос статуса ККТ (0x01) (запускается один раз при старте и далее берется из кэша)
         public GetKktStatusResponse GetKktStatus()
         {
             logicLevel = new LogicLevel();
@@ -741,7 +752,7 @@ namespace KKT_APP_FA.Units
 
         // Запрос заводского номера ККТ 0x02 (не нужно, дублируется с 0x01)
 
-        // Запрос версии ПО ККТ (0x03) (в идеале запускать один раз при старте и далее брать из кэша)
+        // Запрос версии ПО ККТ (0x03) (запускается один раз при старте и далее берется из кэша)
         public GetFirmwareVersionResponse GetFirmwareVersion()
         {
             logicLevel = new LogicLevel();

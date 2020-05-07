@@ -11,6 +11,8 @@
         GET_FN_EXPIRED = 0x07, // Запрос срока действия ФН (0x07)
         GET_FISCAL_STORAGE_STATUS = 0x08, // 
         GET_REGISTRATION_PARAMETERS = 0x0A, // Запрос текущих параметров регистрации ККТ
+        GET_KKT_CONFIGURATION_VERSION = 0x0B, // Запрос версии конфигурации ККТ (0x0B)
+        GET_TCP_IP_PARAMS = 0x0E, // Запрос текущих параметров TCP/IP (0x0E)
         CANCEL_FISCAL_DOCUMENT = 0x10, // Отменяет любой начатый фискальный документ. Все данные, введенные с помощью команды "Передать данные документа" удаляются
         SEND_AUTOMATIC_DEVICE_DATA = 0x1F, // Передать данные автоматического устройства расчетов для кассового чека (0x1F)
         GET_SHIFT_INFO = 0x20, // Запрос параметров текущей смены (0x20)
@@ -33,6 +35,7 @@
         CUT = 0x62,
         REGISTRATION_PARAMETERS = 0x0A,
         CANCEL_DOCUMENT = 0x10,
+        GET_OFD_INFORMATION_EXCHANGE_STATUS = 0x50, // Запрос статуса информационного обмена с ОФД (0x50) 
 
         KKT_RESTART = 0xEF // Перезагрузка ККТ
     }

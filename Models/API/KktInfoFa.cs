@@ -128,7 +128,6 @@ namespace KKT_APP_FA.Models.API         //[Description("Заводской но�
             this.LastFD = logicLevel.ConvertFromByteArray.ToInt(DATA.Skip(26).XReverse().ToArray()).ToString();
         }
 
-        // Осталось:
         // Установка текущих параметров регистрации ККТ (0x0A)
         public void Set0x0A(LogicLevel logicLevel)
         {
@@ -152,8 +151,8 @@ namespace KKT_APP_FA.Models.API         //[Description("Заводской но�
                 if (!string.IsNullOrEmpty(KKTOperatingModeDescription) && KKTOperatingModeDescription.Length >= 2)
                     KKTOperatingModeDescription = KKTOperatingModeDescription.Remove(KKTOperatingModeDescription.Length - 2);
 
-                this.TaxTypes = DATA.Skip(33).Take(1).ToArray()[0];
-                a = TaxTypes;
+                this.TaxType = DATA.Skip(33).Take(1).ToArray()[0];
+                a = TaxType;
                 foreach (var item in Enum.GetValues(typeof(TaxTypeEnum))) // цикл по полям enum
                 {
 
@@ -191,21 +190,64 @@ namespace KKT_APP_FA.Models.API         //[Description("Заводской но�
             }
         }
 
-        //// (0x0B) Установка версии конфигурации ККТ
-        //public string KKTConfigurationVersion { get; set; } //
+        // (0x0B) Установка версии конфигурации ККТ
+        public void Set0x0B(LogicLevel logicLevel)
+        {
+            var DATA = logicLevel.response.DATA.XReverse().ToArray(); // на всякий тут
+            if (DATA != null && DATA.Length > 0)
+            {
+                this.KKTConfigurationVersion = logicLevel.ConvertFromByteArray.ToString(DATA);
+            }
+        }
 
-        //// 0x0E Установка текущих параметров TCP/IP
-        //public string KKTIP { get; set; }
-        //public string KKTNetworkMask { get; set; }
-        //public string KKTGateWay { get; set; }
+        // (0x0E) Установка текущих параметров TCP/IP
+        public void Set0x0E(LogicLevel logicLevel)
+        {
+            var DATA = logicLevel.response.DATA.XReverse().ToArray(); // на всякий тут
+            if (DATA != null && DATA.Length >= 12)
+            {
+                //this.KKTIP = logicLevel.ConvertFromByteArray.ToInt(DATA.Take(4).ToArray()).ToString();
 
-        //// 0x50 Установка статуса информационного обмена с ОФД
-        //public byte InformationExchangeStatus { get; set; } // Служебный параметр
-        //public byte OFDMessageReadingStatus { get; set; } // Служебный параметр
-        //public int OFDMessageCount { get; set; } // Количество сообщений для передачи в ОФД
-        //public int OFDFirstDocumentNumber { get; set; } // Номер первого в очереди документа для ОФД
-        //public string OFDFirstDocumentDateTime { get; set; } // Дата-время первого в очереди документа для ОФД
-        // и всё
+                this.KKTIP =
+                    logicLevel.ConvertFromByteArray.ToByte(new byte[] { DATA[0] }).ToString() + "." +
+                    logicLevel.ConvertFromByteArray.ToByte(new byte[] { DATA[1] }).ToString() + "." +
+                    logicLevel.ConvertFromByteArray.ToByte(new byte[] { DATA[2] }).ToString() + "." +
+                    logicLevel.ConvertFromByteArray.ToByte(new byte[] { DATA[3] }).ToString();
+                this.KKTNetworkMask = 
+                    logicLevel.ConvertFromByteArray.ToByte(new byte[] { DATA[4] }).ToString() + "." +
+                    logicLevel.ConvertFromByteArray.ToByte(new byte[] { DATA[5] }).ToString() + "." +
+                    logicLevel.ConvertFromByteArray.ToByte(new byte[] { DATA[6] }).ToString() + "." +
+                    logicLevel.ConvertFromByteArray.ToByte(new byte[] { DATA[7] }).ToString();
+                this.KKTGateWay =
+                    logicLevel.ConvertFromByteArray.ToByte(new byte[] { DATA[8] }).ToString() + "." +
+                    logicLevel.ConvertFromByteArray.ToByte(new byte[] { DATA[9] }).ToString() + "." +
+                    logicLevel.ConvertFromByteArray.ToByte(new byte[] { DATA[10] }).ToString() + "." +
+                    logicLevel.ConvertFromByteArray.ToByte(new byte[] { DATA[11] }).ToString();
+            }
+        }
+
+        // (0x50) Установка статуса информационного обмена с ОФД
+        public void Set0x50(LogicLevel logicLevel)
+        {
+            var DATA = logicLevel.response.DATA.XReverse().ToArray(); // на всякий тут
+            if (DATA != null && DATA.Length >= 13)
+            {
+                this.InformationExchangeStatus = DATA[0];
+                this.OFDMessageReadingStatus = DATA[1];
+                this.OFDMessageCount = logicLevel.ConvertFromByteArray.ToShort(DATA.Skip(2).Take(2).ToArray());
+                this.OFDFirstDocumentNumber = logicLevel.ConvertFromByteArray.ToInt(DATA.Skip(4).Take(4).ToArray());
+                string yyyy = (2000 + logicLevel.ConvertFromByteArray.ToByte(new byte[] { DATA[8] })).ToString();
+                string mm = logicLevel.ConvertFromByteArray.ToByte(new byte[] { DATA[9] }).ToString();
+                string dd = logicLevel.ConvertFromByteArray.ToByte(new byte[] { DATA[10] }).ToString();
+                string hour = logicLevel.ConvertFromByteArray.ToByte(new byte[] { DATA[11] }).ToString();
+                string min = logicLevel.ConvertFromByteArray.ToByte(new byte[] { DATA[12] }).ToString();
+                this.OFDFirstDocumentDateTime = Fix(dd) + "." + Fix(mm) + "." + yyyy + " " + hour + ":" + Fix(min) + ":00";
+                if (OFDFirstDocumentDateTime == "00.00.2000 0:00:00")
+                {
+                    this.OFDFirstDocumentDateTime = "";
+                }
+            }
+        }
 
         // (0x01)
         public string KKTFactoryNumber { get; set; } // заводской номер ККТ
@@ -259,7 +301,7 @@ namespace KKT_APP_FA.Models.API         //[Description("Заводской но�
         public string INN { get; set; } // ИНН. Дополняется пробелами справа до длины 12 символов
         public byte KKTOperatingMode { get; set; } // Режимы работы ККТ. Временно byte. Битовая маска
         public string KKTOperatingModeDescription { get; set; } // Описание режимов работы ККТ. М/б несколько
-        public byte TaxTypes { get; set; } // Режимы налогообложения. Битовая маска
+        public byte TaxType { get; set; } // Режимы налогообложения. Битовая маска
         public string TaxTypesDescription { get; set; } // Режимы налогообложения (расшифровка). Может быть несколько, надо проверять через логическое умножение с TaxTypEnum
         public byte AgentType { get; set; } // Признак платежного агента. Битовая маска
         public string AgentTypeDescription { get; set; } // Признак платежного агента (расшифровка). Может быть несколько, надо проверять через логическое умножение с AgentEnum
