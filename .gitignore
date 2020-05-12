@@ -1,5 +1,4 @@
-.config/
 bin/
+.config/
 logs/
 obj/
-database.s3db
