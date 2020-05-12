@@ -6,9 +6,10 @@ using Dapper;
 //using DapperExtensions;
 using System.Data;
 using System.Data.SqlClient;
-using System.Data.SQLite;
+//using System.Data.SQLite;
 using Microsoft.Extensions.Configuration;
 using KKT_APP_FA.Models.DB;
+using Microsoft.Data.Sqlite;
 
 namespace KKT_APP_FA.Services.DB
 {
@@ -17,8 +18,9 @@ namespace KKT_APP_FA.Services.DB
         //=======================================================================================================================================
         public List<T> SendSQLQueryToList<T>(string sql, string connectionString) // Возвращает тип (напр. для select)
         {
-            using (IDbConnection db = new SQLiteConnection(connectionString))
+            using (IDbConnection db = new SqliteConnection(connectionString))
             {
+                db.Open();
                 var res = db.Query<T>(sql).ToList();
                 db.Close();
                 db.Dispose();
@@ -29,8 +31,9 @@ namespace KKT_APP_FA.Services.DB
         //=======================================================================================================================================
         public T SendSQLQuery<T>(string sql, string connectionString) // Возвращает тип (напр. для select)
         {
-            using (IDbConnection db = new SQLiteConnection(connectionString))
+            using (IDbConnection db = new SqliteConnection(connectionString))
             {
+                db.Open();
                 var res = db.Query<T>(sql).FirstOrDefault();
                 db.Close();
                 db.Dispose();
@@ -41,8 +44,9 @@ namespace KKT_APP_FA.Services.DB
         //=======================================================================================================================================
         public int SendSQLQuery(string sql, string connectionString) // Возвращает результат (напр. для update, insert)
         {
-            using (IDbConnection db = new SQLiteConnection(connectionString))
+            using (IDbConnection db = new SqliteConnection(connectionString))
             {
+                db.Open();
                 var res = db.Execute(sql);
                 db.Close();
                 db.Dispose();
@@ -53,8 +57,9 @@ namespace KKT_APP_FA.Services.DB
         //=======================================================================================================================================
         public async Task<List<T>> SendSQLQueryToListAsync<T>(string sql, string connectionString)
         {
-            using (IDbConnection db = new SQLiteConnection(connectionString))
+            using (IDbConnection db = new SqliteConnection(connectionString))
             {
+                db.Open();
                 var res = await db.QueryAsync<T>(sql) as List<T>;
                 db.Close();
                 db.Dispose();
@@ -65,8 +70,9 @@ namespace KKT_APP_FA.Services.DB
         //=======================================================================================================================================
         public async Task<T> SendSQLQueryAsync<T>(string sql, string connectionString)
         {
-            using (IDbConnection db = new SQLiteConnection(connectionString))
+            using (IDbConnection db = new SqliteConnection(connectionString))
             {
+                db.Open();
                 var result = await db.QueryAsync<T>(sql) as List<T>;
                 var res = result.FirstOrDefault();
                 db.Close();
@@ -78,8 +84,9 @@ namespace KKT_APP_FA.Services.DB
         //=======================================================================================================================================
         public async Task<int> SendSQLQueryAsync(string sql, string connectionString)
         {
-            using (IDbConnection db = new SQLiteConnection(connectionString))
+            using (IDbConnection db = new SqliteConnection(connectionString))
             {
+                db.Open();
                 var res = await db.ExecuteAsync(sql);
                 db.Close();
                 db.Dispose();
@@ -92,8 +99,9 @@ namespace KKT_APP_FA.Services.DB
         //=======================================================================================================================================
         public string Insert<T>(T obj, string connectionString)
         {
-            using (IDbConnection db = new SQLiteConnection(connectionString))
+            using (IDbConnection db = new SqliteConnection(connectionString))
             {
+                db.Open();
                 var res = db.Insert<string, T>(obj);
                 db.Close();
                 db.Dispose();
@@ -104,8 +112,9 @@ namespace KKT_APP_FA.Services.DB
         //=======================================================================================================================================
         public async Task<string> InsertAsync<T>(T obj, string connectionString)
         {
-            using (IDbConnection db = new SQLiteConnection(connectionString))
+            using (IDbConnection db = new SqliteConnection(connectionString))
             {
+                db.Open();
                 var res = await db.InsertAsync<Guid, T>(obj);
                 db.Close();
                 db.Dispose();
@@ -116,8 +125,9 @@ namespace KKT_APP_FA.Services.DB
         //=======================================================================================================================================
         public int Update<T>(T obj, string connectionString)
         {
-            using (IDbConnection db = new SQLiteConnection(connectionString))
+            using (IDbConnection db = new SqliteConnection(connectionString))
             {
+                db.Open();
                 var res = db.Update<T>(obj);
                 db.Close();
                 db.Dispose();
@@ -128,8 +138,9 @@ namespace KKT_APP_FA.Services.DB
         //=======================================================================================================================================
         public async Task<int> UpdateAsync<T>(T obj, string connectionString)
         {
-            using (IDbConnection db = new SQLiteConnection(connectionString))
+            using (IDbConnection db = new SqliteConnection(connectionString))
             {
+                db.Open();
                 var res = await db.UpdateAsync<T>(obj);
                 db.Close();
                 db.Dispose();
@@ -140,8 +151,9 @@ namespace KKT_APP_FA.Services.DB
         //=======================================================================================================================================
         public List<T> SelectList<T>(T obj, string connectionString)
         {
-            using (IDbConnection db = new SQLiteConnection(connectionString))
+            using (IDbConnection db = new SqliteConnection(connectionString))
             {
+                db.Open();
                 var res = db.GetList<T>(obj);
                 db.Close();
                 db.Dispose();
@@ -152,8 +164,9 @@ namespace KKT_APP_FA.Services.DB
         //=======================================================================================================================================
         public List<T> Select<T>(object obj, string connectionString)
         {
-            using (IDbConnection db = new SQLiteConnection(connectionString))
+            using (IDbConnection db = new SqliteConnection(connectionString))
             {
+                db.Open();
                 var res = db.GetList<T>(obj);
                 db.Close();
                 db.Dispose();
