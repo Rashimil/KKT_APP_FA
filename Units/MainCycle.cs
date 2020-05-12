@@ -110,7 +110,7 @@ namespace KKT_APP_FA.Units
                         FiscalResult = null;
                     }
 
-                    else // TODO Если ничего не совпало - вернуть какую ниботь неизвестную ошибку
+                    else // Если ничего не совпало - вернуть какую ниботь неизвестную ошибку
                     {
                         body = null;
                         FiscalResult = new KKTHighLevelResponse();
@@ -273,7 +273,7 @@ namespace KKT_APP_FA.Units
                 catch (Exception ex)
                 {
                     TaskObject.logger.Write(ex.ToString(), "QueueWork_exception_log");
-                    // TODO Тут надо в БД ставить статус done
+                    // Тут надо в БД ставить статус done
                     registration_context.status = "done(QueueWork_exception)";
                     TaskObject.sQLiteService.Update<RegistrationsContext>(registration_context, SQLiteConnectionString);
                 }

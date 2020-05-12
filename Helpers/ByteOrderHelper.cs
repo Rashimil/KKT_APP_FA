@@ -7,7 +7,7 @@ using KKT_APP_FA.Enums;
 
 namespace KKT_APP_FA.Helpers
 {
-    public static class ByteOrderHelper // TODO вынести в стартап или еще куда, чтоб срабатывал один раз при запуске и всё
+    public static class ByteOrderHelper 
     {
         static byte val;
         static ByteOrderHelper()

@@ -44,7 +44,7 @@ namespace KKT_APP_FA.Models.KKTResponse
         }
 
         public string KKTFactoryNumber { get; set; } // заводской номер ККТ
-        public string KKTDateTime { get; set; } // Дат и время ККТ // TODO ToString(yyyyMMddHHmmss)
+        public string KKTDateTime { get; set; } // Дат и время ККТ // ToString(yyyyMMddHHmmss)
         public bool HasCriticalError { get; set; } // Критические ошибки в ККТ. false – ошибок нет, true – присутствуют
         public byte PrinterStatus { get; set; } // 0 – Корректный статус, бумага присутствует, 1 – Устройство не подключено, 2 – Отсутствует бумага, 3 – Замятие бумаги, 5 – Открыта крышка ПУ, 6 – Ошибка отрезчика ПУ, 7 – Аппаратная ошибка ПУ
         public bool FNConnected { get; set; } // Наличие ФН в ККТ

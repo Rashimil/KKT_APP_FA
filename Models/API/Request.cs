@@ -93,7 +93,7 @@ namespace KKT_APP_FA.Models.API
     public class Vat // Ставка налога       
     {
         public string type { get; set; } // none-без НДС, vat0-ставка 0% и тд
-        public double sum { get; set; } // Сумма налога в рублях (2 знака после запятой) МБ НЕ НУЖНО, Т, К, ПВСЕ РАВНО СЧИТАЕТСЯ В ДРАЙВЕРЕ
+        public double sum { get; set; } // Сумма налога в рублях (2 знака после запятой) 
     }
 
     public class Receipt
