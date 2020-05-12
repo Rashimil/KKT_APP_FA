@@ -2,3 +2,4 @@
 bin/
 logs/
 obj/
+database.s3db
