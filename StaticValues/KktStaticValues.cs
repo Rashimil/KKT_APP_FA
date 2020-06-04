@@ -1,4 +1,5 @@
-﻿using System;
+﻿using KKT_APP_FA.Models.API;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -16,5 +17,6 @@ namespace KKT_APP_FA.StaticValues
         public static byte TaxTypes { get; set; } // Режимы налогообложения. Временно byte. Битовая маска
         public static byte AgentType { get; set; } // Признак платежного агента. Временно byte. Битовая маска
         public static string FirmwareVersion { get; set; } // Версия ПО ККТ
+        public static KktRegistrationReport kktRegistrationReport { get; set; } // Отчет о регистрации ККТ (по всем тэгам)
     }
 }

@@ -102,7 +102,15 @@ namespace KKT_APP_FA.Services.DB
             using (IDbConnection db = new SqliteConnection(connectionString))
             {
                 db.Open();
-                var res = db.Insert<string, T>(obj);
+                var res = "";
+                try
+                {
+                    // засунуто в try catch блок, ибо dapper simplecrud тут падает в exception
+                    // при использовании Microsoft.Data.Sqlite вместо System.Data.Sqlite. 
+                    // Но при этом успешно добавляет запись!!!
+                    db.Insert<string, T>(obj);
+                }
+                catch (Exception) { }             
                 db.Close();
                 db.Dispose();
                 return res;//.ToString();
@@ -115,7 +123,10 @@ namespace KKT_APP_FA.Services.DB
             using (IDbConnection db = new SqliteConnection(connectionString))
             {
                 db.Open();
-                var res = await db.InsertAsync<Guid, T>(obj);
+                // возможно далее выпадет в exception, т. к. dapper simplecrud при Insert падает в exception 
+                // при использовании Microsoft.Data.Sqlite вместо System.Data.Sqlite.
+                // Но при этом успешно добавляет запись!!!
+                var res = await db.InsertAsync<Guid, T>(obj);  
                 db.Close();
                 db.Dispose();
                 return res.ToString();

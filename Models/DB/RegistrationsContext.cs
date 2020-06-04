@@ -12,7 +12,7 @@ namespace KKT_APP_FA.Models.DB
     public class RegistrationsContext
     {
         [Key]
-        [Required]       
+        [Required] 
         public string id { get; set; }
 
         public string group_code { get; set; }
