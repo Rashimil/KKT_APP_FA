@@ -393,6 +393,10 @@ namespace KKT_APP_FA.Helpers
                 //}
                 return res;
             }
+            public bool ToBoolean(byte[] data)
+            {
+                return data[0] == 1 ? true : false;
+            }
             public byte ToByte(byte[] data)
             {
                 return data[0];
@@ -463,7 +467,7 @@ namespace KKT_APP_FA.Helpers
         // Конвертация разных форматов в массив byte[]
         public byte[] ConvertToByteArray<T>(T VALUE)
         {
-            Type t = VALUE.GetType();  // Type t = typeof(T) - не работаетЮ возвращает object
+            Type t = VALUE.GetType();  // Type t = typeof(T) - не работает, возвращает object
             byte[] value;
             if (t == typeof(string))
             {

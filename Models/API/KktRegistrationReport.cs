@@ -94,21 +94,59 @@ namespace KKT_APP_FA.Models.API
 B6 11 
         */
 		#endregion
-		public KktRegistrationReport(byte[] registrationReport)
+		byte[] TLVs;
+		public KktRegistrationReport(byte[] registrationReportTLVs)
         {
-			if (registrationReport.Length >= 12) // минимально 
+			if (registrationReportTLVs.Length > 12) // минимально 
 			{
-				byte[] TLVs = registrationReport.Skip(5).Take(registrationReport.Length - 7).ToArray();
+				TLVs = registrationReportTLVs.Skip(5).Take(registrationReportTLVs.Length - 7).ToArray();
+				/// или TLVs = registrationReportTLVs; ведь не факт что придет полный TLV а не только VALUE
 			}
-			
-        }
+		}
+
+		//public void 
     }
 
     // тестовые заметки...
     public class KktRegistrationReportHelper
     {
-        //public 
-    }
+		// Словарь сопоставления тэгов и типов
+		public Dictionary<int, Type> TagTypesList;
+		public KktRegistrationReportHelper()
+		{
+			TagTypesList = new Dictionary<int, Type>();
+			TagTypesList.Add(1041, typeof(string)); // носер ФН
+			TagTypesList.Add(1037, typeof(string)); // Рег. номер ККТ
+			TagTypesList.Add(1018, typeof(string)); // ИНН пользователя
+			TagTypesList.Add(1040, typeof(int)); // номер ФД
+			TagTypesList.Add(1012, typeof(int)); // Дата и время (unixtime UTC)
+			TagTypesList.Add(1077, typeof(string)); // ФПД
+			TagTypesList.Add(1056, typeof(bool)); // признак шифрования
+			TagTypesList.Add(1002, typeof(bool)); // признак автономного режима
+			TagTypesList.Add(1001, typeof(bool)); // признак автоматического режима
+			TagTypesList.Add(1109, typeof(bool)); // признак расчетов за услуги
+			TagTypesList.Add(1110, typeof(bool)); // признак АС БСО
+			TagTypesList.Add(1108, typeof(bool)); // признак ККТ для расчетов только в Интернет
+			TagTypesList.Add(1062, typeof()); // системы налогообложения (битовая маска)
+			TagTypesList.Add(1048, typeof(string)); // наименование пользователя
+			TagTypesList.Add(1009, typeof(string)); // адрес расчетов
+			TagTypesList.Add(1187, typeof(string)); // Место расчетов
+			TagTypesList.Add(1021, typeof(string)); // кассир
+			TagTypesList.Add(1221, typeof(bool)); // признак установки принтера в автомате
+			TagTypesList.Add(1017, typeof(string)); // ИНН ФОД
+			TagTypesList.Add(1046, typeof(string)); // наименование ОФД
+			TagTypesList.Add(1117, typeof(string)); // Адрес электронной почты отправителя чека
+			TagTypesList.Add(1060, typeof(string)); // Адрес сайта ФНС
+			TagTypesList.Add(1209, typeof()); // версия ФФД (2 = 1.05, 3 = 1.1)
+			TagTypesList.Add(1189, typeof()); // версия ФФД ККТ (2 = 1.05, 3 = 1.1)
+			TagTypesList.Add(1188, typeof(string)); // версия ККТ
+			TagTypesList.Add(1013, typeof(string)); // заводской номер ККТ
+
+
+		}
+		
+		
+	}
 
     public class RegistrationReportItem
     {

@@ -12,9 +12,9 @@ namespace KKT_APP_FA.Models
         public TerminalFASettings(IConfiguration Configuration)
         {
             try {
-                this.IP = Configuration.GetSection("TereminalFASettings")["IP"];
-                this.PORT = Convert.ToInt32(Configuration.GetSection("TereminalFASettings")["PORT"]);
-                this.READ_TIMEOUT = Convert.ToInt32(Configuration.GetSection("TereminalFASettings")["READ_TIMEOUT"]);
+                this.IP = Configuration.GetSection("TerminalFASettings")["IP"];
+                this.PORT = Convert.ToInt32(Configuration.GetSection("TerminalFASettings")["PORT"]);
+                this.READ_TIMEOUT = Convert.ToInt32(Configuration.GetSection("TerminalFASettingsTerminalFASettings")["READ_TIMEOUT"]);
                 this.BUFFER_SIZE = Convert.ToInt32(Configuration.GetSection("TereminalFASettings")["BUFFER_SIZE"]);
             } 
             catch (Exception) {
