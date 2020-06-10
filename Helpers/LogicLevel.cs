@@ -24,7 +24,7 @@ namespace KKT_APP_FA.Helpers
         public Response response; // ответ от ККТ как структура состояния класса
         public TLV tlv;
         public STLV stlv;
-        public TerminalFASettings terminalFASettings;
+        public TerminalFASettings terminalFASettings;       
 
         public _GetDataFromTLV GetDataFromTLV;
         public _ConvertFromByteArray ConvertFromByteArray;
@@ -379,6 +379,11 @@ namespace KKT_APP_FA.Helpers
         // Конвертация массива byte[] в разные форматы
         public class _ConvertFromByteArray
         {
+            private int timezone_shift; // Сдвиг GMT
+            public _ConvertFromByteArray()
+            {
+                try { timezone_shift = Convert.ToInt32(Startup.ConfigStatic.GetSection("MainSettings")["TimezoneShift"]); } catch (Exception) { }
+            }
             public string ToString(byte[] data) // как строку
             {
                 Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
@@ -455,9 +460,70 @@ namespace KKT_APP_FA.Helpers
                     int ss = 0;
                     return new DateTime(year, mounth, day, hh, mm, ss);
                 }
+                else if (data.Length == 4) // формат unixtime в секундах
+                {
+                    int unixtime =  BitConverter.ToInt32(data, 0); 
+                    return new DateTime(1970, 1, 1, timezone_shift, 0, 0, DateTimeKind.Utc).AddSeconds(unixtime);
+                }
                 else
                 {
                     return DateTime.MinValue;
+                }
+            }
+            public object ToGenericType<T>(byte[] data)
+            {
+                var t = typeof(T);
+                if (t == typeof(string))
+                {
+                    return (data);
+                }
+                else if (t == typeof(bool))
+                {
+                    return ToBoolean(data);
+                }
+                else if (t == typeof(byte))
+                {
+                    return ToByte (data);
+                }
+                else if (t == typeof(ushort))
+                {
+                    return ToUShort(data); 
+                }
+                else if (t == typeof(short))
+                {
+                    return ToShort(data);
+                }
+                else if (t == typeof(int))
+                {
+                    return ToInt (data);
+                }
+                else if (t == typeof(uint))
+                {
+                    return ToUInt(data);
+                }
+                else if (t == typeof(ulong))
+                {
+                    return ToULong(data);
+                }
+                else if (t == typeof(long))
+                {
+                    return ToLong(data);
+                }
+                else if (t == typeof(float))
+                {
+                    return ToFloat(data);
+                }
+                else if (t == typeof(double))
+                {
+                    return ToDouble(data);
+                }
+                else if (t == typeof(DateTime))
+                {
+                    return ToDateTime(data);
+                }
+                else
+                {
+                    return null;
                 }
             }
         }

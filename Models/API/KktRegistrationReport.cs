@@ -1,4 +1,5 @@
-﻿using System;
+﻿using KKT_APP_FA.Helpers;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -95,24 +96,46 @@ B6 11
         */
 		#endregion
 		byte[] TLVs;
-		public KktRegistrationReport(byte[] registrationReportTLVs)
+		public KktRegistrationReport(byte[] registrationReportTLVs, LogicLevel logicLevel)
         {
 			if (registrationReportTLVs.Length > 12) // минимально 
 			{
 				TLVs = registrationReportTLVs.Skip(5).Take(registrationReportTLVs.Length - 7).ToArray();
-				/// или TLVs = registrationReportTLVs; ведь не факт что придет полный TLV а не только VALUE
+				// или TLVs = registrationReportTLVs; ведь не факт что придет полный TLV а не только VALUE
+			
+				List<LogicLevel.TLV> GetTLV(byte[] data, List<LogicLevel.TLV> TLVs, int pos = 0) // рекурсивная функция заполнения листа из TLV
+				{
+					if (pos <= (data.Length - 1 - 5))
+					{
+						byte[] TAG = data.Skip(pos).Take(2).ToArray();
+						int len = logicLevel.ConvertFromByteArray.ToInt(data.Skip(pos + 2).Take(2).ToArray());
+						byte[] VALUE = data.Skip(pos + 2 + 2).Take(len).ToArray();
+						pos = pos + TAG.Length + 2 + len;
+						LogicLevel.TLV TLV = new LogicLevel.TLV(TAG, VALUE);
+						TLVs.Add(TLV);
+						return GetTLV(data, TLVs, pos);
+					}
+					else
+					{
+						return TLVs;
+					}
+				}
+
+				List<LogicLevel.TLV> TLVList = new List<LogicLevel.TLV>();
+				TLVList = GetTLV(TLVs, TLVList);
+
 			}
 		}
 
 		//public void 
     }
 
-    // тестовые заметки...
-    public class KktRegistrationReportHelper
-    {
-		// Словарь сопоставления тэгов и типов
-		public Dictionary<int, Type> TagTypesList;
-		public KktRegistrationReportHelper()
+	// тестовые заметки...
+
+	public static class KktRegistrationReportHelper
+    {	
+		private static Dictionary<int, Type> TagTypesList; // Словарь сопоставления тэгов и типов
+		static KktRegistrationReportHelper()
 		{
 			TagTypesList = new Dictionary<int, Type>();
 			TagTypesList.Add(1041, typeof(string)); // носер ФН
@@ -127,7 +150,7 @@ B6 11
 			TagTypesList.Add(1109, typeof(bool)); // признак расчетов за услуги
 			TagTypesList.Add(1110, typeof(bool)); // признак АС БСО
 			TagTypesList.Add(1108, typeof(bool)); // признак ККТ для расчетов только в Интернет
-			TagTypesList.Add(1062, typeof()); // системы налогообложения (битовая маска)
+			TagTypesList.Add(1062, typeof(byte)); // системы налогообложения (битовая маска)
 			TagTypesList.Add(1048, typeof(string)); // наименование пользователя
 			TagTypesList.Add(1009, typeof(string)); // адрес расчетов
 			TagTypesList.Add(1187, typeof(string)); // Место расчетов
@@ -137,19 +160,20 @@ B6 11
 			TagTypesList.Add(1046, typeof(string)); // наименование ОФД
 			TagTypesList.Add(1117, typeof(string)); // Адрес электронной почты отправителя чека
 			TagTypesList.Add(1060, typeof(string)); // Адрес сайта ФНС
-			TagTypesList.Add(1209, typeof()); // версия ФФД (2 = 1.05, 3 = 1.1)
-			TagTypesList.Add(1189, typeof()); // версия ФФД ККТ (2 = 1.05, 3 = 1.1)
+			TagTypesList.Add(1209, typeof(byte)); // версия ФФД (2 = 1.05, 3 = 1.1)
+			TagTypesList.Add(1189, typeof(byte)); // версия ФФД ККТ (2 = 1.05, 3 = 1.1)
 			TagTypesList.Add(1188, typeof(string)); // версия ККТ
 			TagTypesList.Add(1013, typeof(string)); // заводской номер ККТ
-
-
+		}	
+	
+	public static Dictionary<int, Type> GetTagTypes()
+		{
+			return TagTypesList;
 		}
-		
-		
 	}
 
-    public class RegistrationReportItem
-    {
+    public class RegistrationReportItem // не нужен
+	{
         public byte[] TAG { get; set; }
         public byte[] LEN { get; set; }
         public byte[] VALUE { get; set; }
