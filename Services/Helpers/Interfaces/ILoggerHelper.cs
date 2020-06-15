@@ -2,6 +2,6 @@
 {
     public interface ILoggerHelper
     {
-        void Write(string msg, string file_name, bool _use_separator = true);
+        void Write(object msg, string file_name, bool _use_separator = true);
     }
 }

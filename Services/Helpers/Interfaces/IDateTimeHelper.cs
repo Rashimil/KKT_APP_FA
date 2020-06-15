@@ -10,5 +10,6 @@ namespace KKT_APP_FA.Services.Helpers
         string DateToFolderName(DateTime dateTime);
         long GetCurrentDayToUnixTimeSeconds();
         int GetTimeZoneShift();
+        (string Day, string Month, string Year) DateToFolders(DateTime dateTime);
     }
 }

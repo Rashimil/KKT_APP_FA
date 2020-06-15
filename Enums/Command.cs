@@ -36,6 +36,7 @@
         REGISTRATION_PARAMETERS = 0x0A,
         CANCEL_DOCUMENT = 0x10,
         GET_OFD_INFORMATION_EXCHANGE_STATUS = 0x50, // Запрос статуса информационного обмена с ОФД (0x50) 
+        GET_REGISTRATION_REPORT = 0x3B, // отчет о регистрации по всем тэгам
 
         KKT_RESTART = 0xEF // Перезагрузка ККТ
     }

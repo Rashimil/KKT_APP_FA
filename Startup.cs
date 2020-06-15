@@ -70,6 +70,7 @@ namespace KKT_APP_FA
         public void Configure(IApplicationBuilder app, IHostingEnvironment env,
             ICRC32 cRC32, SQLiteService sQLiteService, APIHelper aPIHelper, ILoggerHelper logger, IConfiguration configuration)
         {
+            logger.Write("Starting Application...", main_log_file_name, false);
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();

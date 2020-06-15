@@ -1,6 +1,11 @@
-﻿using KKT_APP_FA.Helpers;
+﻿using KKT_APP_FA.Attributes;
+using KKT_APP_FA.Enums;
+using KKT_APP_FA.Extensions;
+using KKT_APP_FA.Helpers;
+using KKT_APP_FA.Services.Helpers;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -9,8 +14,8 @@ namespace KKT_APP_FA.Models.API
     // Отчет о регистрации ККТ (по всем тэгам)
     public class KktRegistrationReport
     {
-		#region request example
-		/*
+        #region request example
+        /*
          B6 29 start
 01 7D длина 
 00 результат. далее идет список TLV
@@ -94,89 +99,208 @@ namespace KKT_APP_FA.Models.API
 		35 35 30 31 30 31 30 30 38 39 31 31 
 B6 11 
         */
-		#endregion
-		byte[] TLVs;
-		public KktRegistrationReport(byte[] registrationReportTLVs, LogicLevel logicLevel)
+        #endregion
+        byte[] TLVs;
+        public DateTimeHelper dateTimeHelper = new DateTimeHelper(Startup.ConfigStatic);
+        public KktRegistrationReport(LogicLevel logicLevel)
         {
-			if (registrationReportTLVs.Length > 12) // минимально 
-			{
-				TLVs = registrationReportTLVs.Skip(5).Take(registrationReportTLVs.Length - 7).ToArray();
-				// или TLVs = registrationReportTLVs; ведь не факт что придет полный TLV а не только VALUE
-			
-				List<LogicLevel.TLV> GetTLV(byte[] data, List<LogicLevel.TLV> TLVs, int pos = 0) // рекурсивная функция заполнения листа из TLV
-				{
-					if (pos <= (data.Length - 1 - 5))
-					{
-						byte[] TAG = data.Skip(pos).Take(2).ToArray();
-						int len = logicLevel.ConvertFromByteArray.ToInt(data.Skip(pos + 2).Take(2).ToArray());
-						byte[] VALUE = data.Skip(pos + 2 + 2).Take(len).ToArray();
-						pos = pos + TAG.Length + 2 + len;
-						LogicLevel.TLV TLV = new LogicLevel.TLV(TAG, VALUE);
-						TLVs.Add(TLV);
-						return GetTLV(data, TLVs, pos);
-					}
-					else
-					{
-						return TLVs;
-					}
-				}
+            if (logicLevel.response.DATA.Length > 12) // минимально 
+            {
+                TLVs = logicLevel.response.DATA; // ведь не факт что придет полный TLV а не только VALUE
 
-				List<LogicLevel.TLV> TLVList = new List<LogicLevel.TLV>();
-				TLVList = GetTLV(TLVs, TLVList);
+                List<LogicLevel.TLV> GetTLV(byte[] data, List<LogicLevel.TLV> TLVs, int pos = 0) // рекурсивная функция парсинга всех TLV из byte[] DATA
+                {
+                    if (pos <= (data.Length - 1 - 5))
+                    {
+                        byte[] TAG = data.Skip(pos).Take(2).ToArray();
+                        ushort len = logicLevel.ConvertFromByteArray.ToUShort(data.Skip(pos + 2).Take(2).XReverse().ToArray());
+                        byte[] VALUE = data.Skip(pos + 2 + 2).Take(len).ToArray();
+                        pos = pos + TAG.Length + 2 + len;
+                        LogicLevel.TLV TLV = new LogicLevel.TLV(TAG, VALUE);
+                        TLVs.Add(TLV);
+                        return GetTLV(data, TLVs, pos);
+                    }
+                    else
+                    {
+                        return TLVs;
+                    }
+                }
 
-			}
-		}
+                List<LogicLevel.TLV> TLVList = new List<LogicLevel.TLV>();
+                TLVList = GetTLV(TLVs, TLVList);
 
-		//public void 
+                foreach (var prop in this.GetType().GetProperties())
+                {
+                    var attributes = prop.CustomAttributes.ToList();
+
+                    var TAGAttr = attributes.Where(c => c.AttributeType.Name.ToLower() == "tagattribute").FirstOrDefault(); // атрибут Tag
+                    var descriptionAttr = attributes.Where(c => c.AttributeType.Name.ToLower() == "descriptionattribute").FirstOrDefault(); // атрибут Description
+
+                    int TAG = (TAGAttr != null) ? (int)TAGAttr.ConstructorArguments[0].Value : 0; // значение атрибута Tag
+                    Type originType = (TAGAttr != null) ? (Type)TAGAttr.ConstructorArguments[1].Value : null; // оригинальный тип из ККТ
+                    Type type = prop.PropertyType; // тип для вывода в класс
+                    //string p_name = prop.Name; // имя свойства
+                    //string Description = (descriptionAttr != null) ? (string)descriptionAttr.ConstructorArguments[0].Value : ""; // описание свойства
+                    byte[] value = (TLVList.Where(c => logicLevel.ConvertFromByteArray.ToShort(c.TAG.XReverse().ToArray()) == TAG).FirstOrDefault().VALUE != null) ? TLVList.Where(c => logicLevel.ConvertFromByteArray.ToShort(c.TAG.XReverse().ToArray()) == TAG).FirstOrDefault().VALUE : new byte[1] { 0x00 }; // значение свойства
+
+                    if (originType == null) // оригинальный тип данных в ККТ совпадает с моделью, можно заполнять соответствующее свойство
+                    {
+                        prop.SetValue(this, logicLevel.ConvertFromByteArray.ToGenericType(value.XReverse().ToArray(), type));
+                    }
+                    else // оригинальный тип данных в ККТ НЕ совпадает с моделью (например теги 1012 1062 1209 1189), такое надо обрабатывать отдельно для каждого тэга
+                    {
+                        if (TAG == 1012) // Дата и время документа, originType - unt, время в формате unixtime UTC, надо конвертить в нормальный формат dd.MM.yyyy HH.mm.ss
+                        {
+                            int unixtime = logicLevel.ConvertFromByteArray.ToInt(value);
+                            var val = dateTimeHelper.UnixtimeToDateTime(unixtime).ToString("dd.MM.yyyy HH:mm:ss");
+                            prop.SetValue(this, val);
+                        }
+                        else if (TAG == 1062) // Cистемы налогообложения. Битовая маска. 
+                        {
+                            var a = value[0];
+                            string TaxTypesDescription = "";
+                            foreach (var item in Enum.GetValues(typeof(TaxTypeEnum))) // цикл по полям enum
+                            {
+                                var b = (byte)(TaxTypeEnum)item;
+                                int r = a & b; // 
+                                if (r != 0 && r == b) // если есть пересечение и результат = item
+                                {
+                                    TaxTypesDescription += (EnumHelper.GetTypeDescription((TaxTypeEnum)item) + ", ");
+                                }
+                            }
+                            if (!string.IsNullOrEmpty(TaxTypesDescription) && TaxTypesDescription.Length >= 2)
+                                TaxTypesDescription = TaxTypesDescription.Remove(TaxTypesDescription.Length - 2);
+                            var val = TaxTypesDescription;
+                            prop.SetValue(this, val);
+                        }
+                        else if (TAG == 1209) // версия ФФД (2 = 1.05, 3 = 1.1)
+                        {
+                            var a = value[0];
+                            var val = EnumHelper.GetTypeDescription((FFDVersionEnum)a);
+                            prop.SetValue(this, val);
+                        }
+                        else if (TAG == 1189) // версия ФФД ККТ (2 = 1.05, 3 = 1.1)
+                        {
+                            var a = value[0];
+                            var val = EnumHelper.GetTypeDescription((FFDVersionEnum)a);
+                            prop.SetValue(this, val);
+                        }
+                        else if (TAG == 1077) // ФПД, в массиве из 6 байт на печать выводятся байты 2-5, которые интерпретируются, как UInt32, big endian
+                        {
+                            var a = value.Skip(2).ToArray();
+                            var val = logicLevel.ConvertFromByteArray.ToInt(a.Reverse().ToArray()).ToString();
+                            prop.SetValue(this, val);
+                        }
+                    }
+                } // останов
+            }
+        }
+
+        // Основное тело ответа:
+
+        [Tag(1041)]
+        [Description("Номер ФН")]
+        public string FnNumber { get; set; }
+
+        [Tag(1037)]
+        [Description("Регистрационный номер ККТ")]
+        public string KKTRegistrationNumber { get; set; }
+
+        [Tag(1018)]
+        [Description("ИНН пользователя")]
+        public string UserINN { get; set; }
+
+        [Tag(1040)]
+        [Description("Номер фискального документа")]
+        public int FD { get; set; }
+
+        [Tag(1012, typeof(int))]
+        [Description("Дата и время документа")]
+        public string DocumentDateTime { get; set; } // unixtime UTC !!! надо конвертить в нормальный формат dd.MM.yyyy HH.mm.ss
+
+        [Tag(1077, typeof(int))]
+        [Description("Фискальный признак документа")]
+        public string FPD { get; set; }
+
+        [Tag(1056)]
+        [Description("Признак шифрования")]
+        public bool UseEncryption { get; set; }
+
+        [Tag(1002)]
+        [Description("Признак автономного режима")]
+        public bool UseOfflineMode { get; set; }
+
+        [Tag(1001)]
+        [Description("Признак автоматического режима")]
+        public bool UseAuthomaticMode { get; set; }
+
+        [Tag(1109)]
+        [Description("Признак расчетов за услуги")]
+        public bool UseService { get; set; }
+
+        [Tag(1110)]
+        [Description("Признак АС БСО")]
+        public bool UseBSO { get; set; }
+
+        [Tag(1108)]
+        [Description("Признак ККТ для расчетов в Интернет")]
+        public bool UseInternetMode { get; set; }
+
+        [Tag(1062, typeof(byte))]
+        [Description("Cистемы налогообложения")]
+        public string SNO { get; set; } // битовая маска !!! надо конвертировать в ИмяDescription
+
+        [Tag(1048)]
+        [Description("Наименование пользователя")]
+        public string UserName { get; set; }
+
+        [Tag(1009)]
+        [Description("Адрес расчетов")]
+        public string PaymentAdress { get; set; }
+
+        [Tag(1187)]
+        [Description("Место расчетов")]
+        public string PaymentAdressPlace { get; set; }
+
+        [Tag(1021)]
+        [Description("Кассир")]
+        public string CashierName { get; set; }
+
+        [Tag(1221)]
+        [Description("Признак установки принтера в автомате")]
+        public bool UseAuthomatPrinter { get; set; }
+
+        [Tag(1017)]
+        [Description("ИНН ОФД")]
+        public string OfdINN { get; set; }
+
+        [Tag(1046)]
+        [Description("Наименование ОФД")]
+        public string OfdName { get; set; }
+
+        [Tag(1117)]
+        [Description("Адрес электронной почты отправителя чека")]
+        public string SenderEmail { get; set; }
+
+        [Tag(1060)]
+        [Description("Адрес сайта ФНС")]
+        public string FnsSite { get; set; }
+
+        [Tag(1209, typeof(byte))]
+        [Description("Версия ФФД")]
+        public string FfdVersion { get; set; } // версия ФФД (2 = 1.05, 3 = 1.1)
+
+        [Tag(1189, typeof(byte))]
+        [Description("Версия ФФД ККТ")]
+        public string FfdKKTVersion { get; set; } // версия ФФД ККТ (2 = 1.05, 3 = 1.1)
+
+        [Tag(1188)]
+        [Description("Версия ККТ")]
+        public string KKTVersion { get; set; }
+
+        [Tag(1013)]
+        [Description("Заводской номер ККТ")]
+        public string KKTManufactureNumber { get; set; }
     }
 
-	// тестовые заметки...
-
-	public static class KktRegistrationReportHelper
-    {	
-		private static Dictionary<int, Type> TagTypesList; // Словарь сопоставления тэгов и типов
-		static KktRegistrationReportHelper()
-		{
-			TagTypesList = new Dictionary<int, Type>();
-			TagTypesList.Add(1041, typeof(string)); // носер ФН
-			TagTypesList.Add(1037, typeof(string)); // Рег. номер ККТ
-			TagTypesList.Add(1018, typeof(string)); // ИНН пользователя
-			TagTypesList.Add(1040, typeof(int)); // номер ФД
-			TagTypesList.Add(1012, typeof(int)); // Дата и время (unixtime UTC)
-			TagTypesList.Add(1077, typeof(string)); // ФПД
-			TagTypesList.Add(1056, typeof(bool)); // признак шифрования
-			TagTypesList.Add(1002, typeof(bool)); // признак автономного режима
-			TagTypesList.Add(1001, typeof(bool)); // признак автоматического режима
-			TagTypesList.Add(1109, typeof(bool)); // признак расчетов за услуги
-			TagTypesList.Add(1110, typeof(bool)); // признак АС БСО
-			TagTypesList.Add(1108, typeof(bool)); // признак ККТ для расчетов только в Интернет
-			TagTypesList.Add(1062, typeof(byte)); // системы налогообложения (битовая маска)
-			TagTypesList.Add(1048, typeof(string)); // наименование пользователя
-			TagTypesList.Add(1009, typeof(string)); // адрес расчетов
-			TagTypesList.Add(1187, typeof(string)); // Место расчетов
-			TagTypesList.Add(1021, typeof(string)); // кассир
-			TagTypesList.Add(1221, typeof(bool)); // признак установки принтера в автомате
-			TagTypesList.Add(1017, typeof(string)); // ИНН ФОД
-			TagTypesList.Add(1046, typeof(string)); // наименование ОФД
-			TagTypesList.Add(1117, typeof(string)); // Адрес электронной почты отправителя чека
-			TagTypesList.Add(1060, typeof(string)); // Адрес сайта ФНС
-			TagTypesList.Add(1209, typeof(byte)); // версия ФФД (2 = 1.05, 3 = 1.1)
-			TagTypesList.Add(1189, typeof(byte)); // версия ФФД ККТ (2 = 1.05, 3 = 1.1)
-			TagTypesList.Add(1188, typeof(string)); // версия ККТ
-			TagTypesList.Add(1013, typeof(string)); // заводской номер ККТ
-		}	
-	
-	public static Dictionary<int, Type> GetTagTypes()
-		{
-			return TagTypesList;
-		}
-	}
-
-    public class RegistrationReportItem // не нужен
-	{
-        public byte[] TAG { get; set; }
-        public byte[] LEN { get; set; }
-        public byte[] VALUE { get; set; }
-        public string VALUE_TYPE { get; set; }
-    }
 }

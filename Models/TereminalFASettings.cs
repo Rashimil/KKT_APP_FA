@@ -14,8 +14,8 @@ namespace KKT_APP_FA.Models
             try {
                 this.IP = Configuration.GetSection("TerminalFASettings")["IP"];
                 this.PORT = Convert.ToInt32(Configuration.GetSection("TerminalFASettings")["PORT"]);
-                this.READ_TIMEOUT = Convert.ToInt32(Configuration.GetSection("TerminalFASettingsTerminalFASettings")["READ_TIMEOUT"]);
-                this.BUFFER_SIZE = Convert.ToInt32(Configuration.GetSection("TereminalFASettings")["BUFFER_SIZE"]);
+                this.READ_TIMEOUT = Convert.ToInt32(Configuration.GetSection("TerminalFASettings")["READ_TIMEOUT"]);
+                this.BUFFER_SIZE = Convert.ToInt32(Configuration.GetSection("TerminalFASettings")["BUFFER_SIZE"]);
             } 
             catch (Exception) {
                 this.IP = "0.0.0.0";

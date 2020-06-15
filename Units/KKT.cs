@@ -541,9 +541,53 @@ namespace KKT_APP_FA.Units
             logicLevel.SendRequestCommand();
             result.Set0x50(logicLevel);
 
+            // Запрос отчета о регистрации ККТ (по всем тэгам)           
+            result.set0x3B(); // сразу берём со статики
+            
+
+
             return result;
         }
 
+        //==============================================================================================================================================
+        
+        // Получение отчета о регистрации по всем тегам. Занимает время 
+        public KktRegistrationReport GetKktRegistrationReport()
+        {
+            byte reportNumber = 0;
+            byte maxReportNumber = 50; // максимальный номер отчета, чтоб не зациклилось
+            // сначала берем гарантированно неверный номер отчета:
+            logicLevel.BuildRequestCommand((byte)CommandEnum.GET_REGISTRATION_REPORT, new byte[] { reportNumber });
+            var LLResponse = logicLevel.SendRequestCommand();
+
+            KktRegistrationReport result = new KktRegistrationReport(logicLevel);
+            while (string.IsNullOrEmpty(result.FnNumber) && reportNumber <= maxReportNumber) // ищем первый не пустой отчет
+            {
+                reportNumber += 1;
+                logicLevel.BuildRequestCommand((byte)CommandEnum.GET_REGISTRATION_REPORT, new byte[] { reportNumber });
+                logicLevel.SendRequestCommand();
+                KktRegistrationReport temp_result = new KktRegistrationReport(logicLevel);
+                if (!string.IsNullOrEmpty(temp_result.FnNumber)) // наткнулись на первый не пустой отчет
+                {
+                    while (!string.IsNullOrEmpty(temp_result.FnNumber) && reportNumber <= maxReportNumber) // ищем первый пустой отчет
+                    {
+                        result = temp_result;
+                        reportNumber += 1;
+                        logicLevel.BuildRequestCommand((byte)CommandEnum.GET_REGISTRATION_REPORT, new byte[] { reportNumber });
+                        logicLevel.SendRequestCommand();
+                        temp_result = new KktRegistrationReport(logicLevel);
+                    }
+                }
+            }
+            return result;
+            /*
+            byte[] DATA = logicLevel.ConvertToByteArray<int>(reportNumber);
+            logicLevel.BuildRequestCommand((byte)CommandEnum.GET_REGISTRATION_REPORT, DATA);
+            logicLevel.SendRequestCommand();
+            return new KktRegistrationReport(logicLevel);
+            */
+        }
+        
         //==============================================================================================================================================
 
         // 2 - Формирование кассового чека коррекции

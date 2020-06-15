@@ -470,60 +470,62 @@ namespace KKT_APP_FA.Helpers
                     return DateTime.MinValue;
                 }
             }
-            public object ToGenericType<T>(byte[] data)
+            public dynamic ToGenericType(byte[] data, Type type)
             {
-                var t = typeof(T);
+                //var t = typeof(T);
+                var t = type;
                 if (t == typeof(string))
                 {
-                    return (data);
+                    return ToString(data) as string;
                 }
                 else if (t == typeof(bool))
                 {
-                    return ToBoolean(data);
+                    return ToBoolean(data) as bool?;
                 }
                 else if (t == typeof(byte))
                 {
-                    return ToByte (data);
+                    return ToByte(data) as byte?;
                 }
                 else if (t == typeof(ushort))
                 {
-                    return ToUShort(data); 
+                    return ToUShort(data) as ushort?;
                 }
                 else if (t == typeof(short))
                 {
-                    return ToShort(data);
+                    return ToShort(data) as short?;
                 }
                 else if (t == typeof(int))
                 {
-                    return ToInt (data);
+                    return ToInt(data) as int?;
                 }
                 else if (t == typeof(uint))
                 {
-                    return ToUInt(data);
+                    return ToUInt(data) as uint?;
                 }
                 else if (t == typeof(ulong))
                 {
-                    return ToULong(data);
+                    return ToULong(data) as ulong?;
                 }
                 else if (t == typeof(long))
                 {
-                    return ToLong(data);
+                    return ToLong(data) as long?;
                 }
                 else if (t == typeof(float))
                 {
-                    return ToFloat(data);
+                    return ToFloat(data) as float?;
                 }
                 else if (t == typeof(double))
                 {
-                    return ToDouble(data);
+                    return ToDouble(data) as double?;
                 }
                 else if (t == typeof(DateTime))
                 {
-                    return ToDateTime(data);
+                    return ToDateTime(data) as DateTime?;
                 }
                 else
                 {
-                    return null;
+                    // return null;
+                    return type;
                 }
             }
         }

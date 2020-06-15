@@ -113,15 +113,39 @@ namespace KKT_APP_FA.Services.Helpers
         {
             //var date_time = DateTime.UtcNow.AddHours(timezone_shift);
             var date_time = dateTime;
-            string Fix(string s)
-            {
-                if (s.Length == 1) return "0" + s;
-                else return s;
-            }
             string dd = Fix(date_time.Day.ToString());
             string mm = Fix(date_time.Month.ToString());
             string yyyy = date_time.Year.ToString();
             return dd + "_" + mm + "_" + yyyy;
+        }
+
+        //=======================================================================================================================================
+
+        // Конвертация UnixTime в DateTime
+        public DateTime UnixtimeToDateTime(int unixtime)
+        {
+            return new DateTime(1970, 1, 1, timezone_shift, 0, 0, 0).AddSeconds(unixtime);
+        }
+
+        //=======================================================================================================================================
+
+        // Возвращает дату в формате кортежа (dd, mm, yyyy)
+        public (string Day, string Month, string Year) DateToFolders(DateTime dateTime)
+        {
+            var date_time = dateTime;
+            string dd = Fix(date_time.Day.ToString());
+            string mm = Fix(date_time.Month.ToString());
+            string yyyy = date_time.Year.ToString();
+            return (dd, mm, yyyy);
+        }
+
+        //=======================================================================================================================================
+        
+        // Приватный метод для вывода красивых дат
+        private string Fix(string s)
+        {
+            if (s.Length == 1) return "0" + s;
+            else return s;
         }
 
         //=======================================================================================================================================

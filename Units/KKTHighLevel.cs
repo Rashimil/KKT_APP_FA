@@ -893,6 +893,7 @@ namespace KKT_APP_FA.Units
             KktStaticValues.TaxTypes = registrationParameters.TaxTypes;
             KktStaticValues.AgentType = registrationParameters.AgentType;
             KktStaticValues.FirmwareVersion = kkt.GetFirmwareVersion().FirmwareVersion;
+            KktStaticValues.kktRegistrationReport = kkt.GetKktRegistrationReport();
         }
 
         //=======================================================================================================================================

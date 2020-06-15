@@ -3,6 +3,7 @@ using KKT_APP_FA.Extensions;
 using KKT_APP_FA.Helpers;
 using KKT_APP_FA.Models.KKTResponse;
 using KKT_APP_FA.Services.Helpers;
+using KKT_APP_FA.StaticValues;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -73,9 +74,10 @@ namespace KKT_APP_FA.Models.API         //[Description("Заводской но�
         // Установка срока действия ФН (0x07)
         public void Set0x07(LogicLevel logicLevel)
         {
-            var DATA = logicLevel.response.DATA.XReverse().ToArray(); // на всякий тут
+            var DATA = logicLevel.response.DATA;
             if (DATA != null && DATA.Length >= 5)
             {
+                DATA = DATA.XReverse().ToArray(); // на всякий тут
                 string yyyy = (2000 + logicLevel.ConvertFromByteArray.ToByte(new byte[] { DATA[0] })).ToString();
                 string mm = logicLevel.ConvertFromByteArray.ToByte(new byte[] { DATA[1] }).ToString();
                 string dd = logicLevel.ConvertFromByteArray.ToByte(new byte[] { DATA[2] }).ToString();
@@ -88,9 +90,10 @@ namespace KKT_APP_FA.Models.API         //[Description("Заводской но�
         // Установка статуса ФН (0x08)
         public void Set0x08(LogicLevel logicLevel)
         {
-            var DATA = logicLevel.response.DATA.XReverse().ToArray(); // на всякий тут
+            var DATA = logicLevel.response.DATA;
             if (DATA != null && DATA.Length >= 27)
             {
+                DATA = DATA.XReverse().ToArray(); // на всякий тут
                 this.CurrentDocument = DATA[1];
                 this.CurrentDocumentDescription = EnumHelper.GetTypeDescription((CurrentDocumentEnum)CurrentDocument);
                 if (DATA[2] == 0) { this.DocumentDataReceived = false; } else { this.DocumentDataReceived = true; }
@@ -133,9 +136,10 @@ namespace KKT_APP_FA.Models.API         //[Description("Заводской но�
         // Установка текущих параметров регистрации ККТ (0x0A)
         public void Set0x0A(LogicLevel logicLevel)
         {
-            var DATA = logicLevel.response.DATA.XReverse().ToArray(); // на всякий тут
+            var DATA = logicLevel.response.DATA;
             if (DATA != null && DATA.Length >= 35)
             {
+                DATA = DATA.XReverse().ToArray(); // на всякий тут
                 this.KKTRegistrationNumber = logicLevel.ConvertFromByteArray.ToString(DATA.Take(20).ToArray());
                 this.INN = logicLevel.ConvertFromByteArray.ToString(DATA.Skip(20).Take(12).ToArray());
                 this.KKTOperatingMode = DATA.Skip(32).Take(1).ToArray()[0];
@@ -195,9 +199,10 @@ namespace KKT_APP_FA.Models.API         //[Description("Заводской но�
         // (0x0B) Установка версии конфигурации ККТ
         public void Set0x0B(LogicLevel logicLevel)
         {
-            var DATA = logicLevel.response.DATA.XReverse().ToArray(); // на всякий тут
+            var DATA = logicLevel.response.DATA;
             if (DATA != null && DATA.Length > 0)
             {
+                DATA = DATA.XReverse().ToArray(); // на всякий тут
                 this.KKTConfigurationVersion = logicLevel.ConvertFromByteArray.ToString(DATA);
             }
         }
@@ -205,9 +210,10 @@ namespace KKT_APP_FA.Models.API         //[Description("Заводской но�
         // (0x0E) Установка текущих параметров TCP/IP
         public void Set0x0E(LogicLevel logicLevel)
         {
-            var DATA = logicLevel.response.DATA.XReverse().ToArray(); // на всякий тут
+            var DATA = logicLevel.response.DATA;
             if (DATA != null && DATA.Length >= 12)
             {
+                DATA = DATA.XReverse().ToArray(); // на всякий тут
                 //this.KKTIP = logicLevel.ConvertFromByteArray.ToInt(DATA.Take(4).ToArray()).ToString();
 
                 this.KKTIP =
@@ -231,9 +237,10 @@ namespace KKT_APP_FA.Models.API         //[Description("Заводской но�
         // (0x50) Установка статуса информационного обмена с ОФД
         public void Set0x50(LogicLevel logicLevel)
         {
-            var DATA = logicLevel.response.DATA.XReverse().ToArray(); // на всякий тут
+            var DATA = logicLevel.response.DATA;
             if (DATA != null && DATA.Length >= 13)
             {
+                DATA = DATA.XReverse().ToArray(); // на всякий тут
                 this.InformationExchangeStatus = DATA[0];
                 this.OFDMessageReadingStatus = DATA[1];
                 this.OFDMessageCount = logicLevel.ConvertFromByteArray.ToShort(DATA.Skip(2).Take(2).ToArray());
@@ -249,6 +256,12 @@ namespace KKT_APP_FA.Models.API         //[Description("Заводской но�
                     this.OFDFirstDocumentDateTime = "";
                 }
             }
+        }
+
+        // (0x3B), Установка данных отчета о регистрации по всем тэгам
+        public void set0x3B()
+        {
+            this.kktRegistrationReport = KktStaticValues.kktRegistrationReport;
         }
 
         //==============================================================================================================================================
@@ -325,6 +338,9 @@ namespace KKT_APP_FA.Models.API         //[Description("Заводской но�
         public int OFDFirstDocumentNumber { get; set; } // Номер первого в очереди документа для ОФД
         public string OFDFirstDocumentDateTime { get; set; } // Дата-время первого в очереди документа для ОФД
 
+        // Отчет о регистрации ККТ (по всем тэгам):
+        // Его надо сохранять в статику и возвращать оттуда
+        public KktRegistrationReport kktRegistrationReport { get; set; } 
         //==============================================================================================================================================
 
         // Служебный метод для вывода красивых дат

@@ -56,7 +56,8 @@ namespace KKT_APP_FA.Services.Helpers
                             {
                                 var log_item = logQueue.Dequeue();
                                 string file_name = log_item.file_name.Replace("/", "");
-                                string directory_date = dateTimeHelper.DateToFolderName(log_item.date_time);
+                                //string directory_date = dateTimeHelper.DateToFolderName(log_item.date_time);
+                                var date = dateTimeHelper.DateToFolders(log_item.date_time);
                                 string separator = "";
                                 if (log_item.use_separator)
                                 {
@@ -66,11 +67,20 @@ namespace KKT_APP_FA.Services.Helpers
                                 bool exists = Directory.Exists(@"logs");
                                 if (!exists) Directory.CreateDirectory(@"logs");
 
-                                exists = Directory.Exists(@"logs/" + directory_date);
+                                //exists = Directory.Exists(@"logs/" + directory_date);
+                                //if (!exists) Directory.CreateDirectory(@"logs/" + directory_date);
 
-                                if (!exists) Directory.CreateDirectory(@"logs/" + directory_date);
+                                exists = Directory.Exists(@"logs/" + date.Year);
+                                if (!exists) Directory.CreateDirectory(@"logs/" + date.Year);
 
-                                using (StreamWriter file = new StreamWriter(@"logs/" + directory_date + "/" + file_name + ".txt", true))
+                                exists = Directory.Exists(@"logs/" + date.Year + "/" + date.Month);
+                                if (!exists) Directory.CreateDirectory(@"logs/" + date.Year + "/" + date.Month);
+
+                                exists = Directory.Exists(@"logs/" + date.Year + "/" + date.Month + "/" + date.Day);
+                                if (!exists) Directory.CreateDirectory(@"logs/" + date.Year + "/" + date.Month + "/" + date.Day);
+
+                                //using (StreamWriter file = new StreamWriter(@"logs/" + directory_date + "/" + file_name + ".txt", true))
+                                using (StreamWriter file = new StreamWriter(@"logs/" + date.Year + "/" + date.Month + "/" + date.Day + "/" + file_name + ".txt", true))
                                 {
                                     string tmptxt = String.Format("{0:[dd.MM.yy HH:mm:ss]} {1}", log_item.date_time, log_item.msg + separator);
                                     file.WriteLine(tmptxt);
@@ -88,14 +98,23 @@ namespace KKT_APP_FA.Services.Helpers
         }
 
         //=======================================================================================================================================
-        public void Write(string msg, string file_name, bool use_separator = true)
+        public void Write(object msg, string file_name, bool use_separator = true)
         {
             if (use_logger)
             {
+                string _msg;
+                if (msg.GetType() == typeof(string))
+                {
+                    _msg = msg.ToString();
+                }
+                else
+                {
+                    _msg = "";
+                }
                 var log_item = new QueeItem()
                 {
                     date_time = DateTime.UtcNow.AddHours(dateTimeHelper.GetTimeZoneShift()),
-                    msg = msg,
+                    msg = _msg,
                     file_name = file_name,
                     use_separator = use_separator
                 };
@@ -104,5 +123,53 @@ namespace KKT_APP_FA.Services.Helpers
         }
 
         //=======================================================================================================================================
+
+        // Построение блока строк для лога по модели:
+        private string BuildResponseString(object obj)
+        {
+            string separator = "\t---" + Environment.NewLine;
+            string result = "";
+            string result_footer = "";
+            var t = obj.GetType();
+            result += t.Name.Replace("Response", "") + Environment.NewLine + separator;
+
+            foreach (var p in obj.GetType().GetProperties())
+            {
+                var n = p.Name;
+                if (n == "Result" || n == "ErrorCode" || n == "Description") // случай BaseResponse
+                {
+                    string val;
+                    try
+                    {
+                        val = p.GetValue(obj).ToString();
+                    }
+                    catch (Exception)
+                    {
+                        val = "";
+                    }
+                    result += ("\t" + n + ": " + val + Environment.NewLine);
+                }
+                else
+                {
+                    string val;
+                    try
+                    {
+                        val = p.GetValue(obj).ToString();
+                    }
+                    catch (Exception)
+                    {
+                        val = "";
+                    }
+                    result_footer += ("\t" + n + ": " + val + Environment.NewLine);
+                }
+            }
+            result += separator;
+            result += result_footer;
+            result += separator;
+            return result;
+        }
+
+
+        //=======================================================================================================================================     
     }
 }

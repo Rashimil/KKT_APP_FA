@@ -292,6 +292,10 @@ namespace KKT_APP_FA.Units
 
             // Получение статичных полей ответа от ККТ:
             KKTHighLevel kKTHighLevel = new KKTHighLevel(); // Создаем новый экземпляр KKTHighLevel
+
+            // Пишем статичные поля в лог:
+            //logger.Write();
+
             kKTHighLevel.GetStaticResponseFields(); // и перед стартом главного цикла получаем статичные значения
             kKTHighLevel = null;
 
