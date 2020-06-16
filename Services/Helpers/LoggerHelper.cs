@@ -109,7 +109,7 @@ namespace KKT_APP_FA.Services.Helpers
                 }
                 else
                 {
-                    _msg = "";
+                    _msg = BuildResponseString(msg); // парсим поля обьекта
                 }
                 var log_item = new QueeItem()
                 {
@@ -125,7 +125,7 @@ namespace KKT_APP_FA.Services.Helpers
         //=======================================================================================================================================
 
         // Построение блока строк для лога по модели:
-        private string BuildResponseString(object obj)
+        public string BuildResponseString(object obj)
         {
             string separator = "\t---" + Environment.NewLine;
             string result = "";
@@ -135,7 +135,16 @@ namespace KKT_APP_FA.Services.Helpers
 
             foreach (var p in obj.GetType().GetProperties())
             {
-                var n = p.Name;
+                var attributes = p.CustomAttributes.ToList();
+
+                var TAGAttr = attributes.Where(c => c.AttributeType.Name.ToLower() == "tagattribute").FirstOrDefault(); // атрибут Tag
+                var descriptionAttr = attributes.Where(c => c.AttributeType.Name.ToLower() == "descriptionattribute").FirstOrDefault(); // атрибут Description
+
+                string descr = (descriptionAttr != null) ? descriptionAttr.ConstructorArguments[0].Value.ToString() : "";  // значение атрибута Description                    
+                int tag = (TAGAttr != null) ? (int)TAGAttr.ConstructorArguments[0].Value : 0; // значение атрибута Tag
+
+                string n = string.IsNullOrEmpty(descr) ? "[" + p.Name + "] " : "[" + descr + "] "; // Наименование свойства
+
                 if (n == "Result" || n == "ErrorCode" || n == "Description") // случай BaseResponse
                 {
                     string val;

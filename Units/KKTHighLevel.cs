@@ -401,7 +401,7 @@ namespace KKT_APP_FA.Units
                                 {
                                     // Всё прошло успешно, можно выдавать инфу чеке:
                                     response.total = CASH + ELECTRONICALLY + PREPAID + CREDIT + OTHER;
-                                    response.fns_site = "nalog.ru";
+                                    response.fns_site = KktStaticValues.kktRegistrationReport.FnsSite;
                                     response.fn_number = KktStaticValues.FN;
                                     response.shift_number = response.RegisterCheck.ShiftNumber;
                                     response.receipt_datetime = response.RegisterCheck.CheckDateTime;
@@ -409,7 +409,7 @@ namespace KKT_APP_FA.Units
                                     response.fiscal_document_number = Convert.ToInt32(response.RegisterCheck.FD);
                                     response.ecr_registration_number = KktStaticValues.KKTRegistrationNumber;
                                     response.fiscal_document_attribute = Convert.ToInt64(response.RegisterCheck.FPD);
-                                    response.daemon_code = "KKT-APP-" + KktStaticValues.KKTFactoryNumber;
+                                    response.daemon_code = "KKT-APP-" + KktStaticValues.kktRegistrationReport.KKTManufactureNumber;
                                     response.device_code = KktStaticValues.FirmwareVersion;
                                     response.error_code = 0;
                                     response.error_text = null;
@@ -465,6 +465,16 @@ namespace KKT_APP_FA.Units
                 response.error = true;
                 // остальные поля (error_code, error_text, error_type) уже заполнены выше
             }
+
+            // доп. свойства для совместимости с оранжем (берем всё со статики):
+            response.ofd_name = KktStaticValues.kktRegistrationReport.OfdName;
+            response.serial_number = KktStaticValues.kktRegistrationReport.KKTManufactureNumber; // серийный номер ККТ
+            response.ofd_site = ""; // его нет в ККТ, и при регистрации он не указывается
+            response.ofd_inn = KktStaticValues.kktRegistrationReport.OfdINN;
+            response.cashier_name = KktStaticValues.kktRegistrationReport.CashierName;
+            response.sender_email = KktStaticValues.kktRegistrationReport.SenderEmail;
+            response.change = 0;  // Сдача. Всегда = 0, т. к. ТерминалФА не поддерживает работу со сдачей
+
             if (response.error) response.error_type = "driver"; // для совместимости с логикой АТОЛ
             return response;
         }
@@ -475,7 +485,7 @@ namespace KKT_APP_FA.Units
         public KKTHighLevelResponse Correction(Correction body, string operation, bool no_print_receipt = true)
         {
             KKTHighLevelResponse response = new KKTHighLevelResponse();
-            short ShiftNumber = 0; 
+            short ShiftNumber = 0;
 
             // Получение taxType (СНО):
             TaxTypeEnum taxType;

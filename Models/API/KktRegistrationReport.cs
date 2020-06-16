@@ -136,7 +136,9 @@ B6 11
                     var TAGAttr = attributes.Where(c => c.AttributeType.Name.ToLower() == "tagattribute").FirstOrDefault(); // атрибут Tag
                     var descriptionAttr = attributes.Where(c => c.AttributeType.Name.ToLower() == "descriptionattribute").FirstOrDefault(); // атрибут Description
 
+                    string descriptionAttrValue = (descriptionAttr != null) ? descriptionAttr.ConstructorArguments[0].Value.ToString() : "";  // значение атрибута Description                    
                     int TAG = (TAGAttr != null) ? (int)TAGAttr.ConstructorArguments[0].Value : 0; // значение атрибута Tag
+
                     Type originType = (TAGAttr != null) ? (Type)TAGAttr.ConstructorArguments[1].Value : null; // оригинальный тип из ККТ
                     Type type = prop.PropertyType; // тип для вывода в класс
                     //string p_name = prop.Name; // имя свойства

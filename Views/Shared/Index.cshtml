@@ -1,7 +1,44 @@
-﻿
-@{
-    ViewData["Title"] = "Index";
-}
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Services</title>
+    <style>
+        a {
+            padding: 4px;
+        }
 
-<h2>Index</h2>
+        html,
+        body,
+        div,
+        b {
+            font-family: 'Roboto', sans-serif;
+            font-size: 14px;
+            background: #fafafa;
+            color: #333;
+        }
+
+        .preloaderHide {
+            display: none;
+        }
+
+        .preloaderShow {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+
+    @{
+        ViewData["Title"] = "Index";
+        <pre>@ViewBag.RegistretionReportString.</pre>
+    }
+
+</body>
+
+</html>
+
+
+
+
 

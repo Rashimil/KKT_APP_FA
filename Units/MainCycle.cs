@@ -3,6 +3,7 @@ using KKT_APP_FA.Models.API;
 using KKT_APP_FA.Models.DB;
 using KKT_APP_FA.Services.DB;
 using KKT_APP_FA.Services.Helpers;
+using KKT_APP_FA.StaticValues;
 using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
 using System;
@@ -293,11 +294,11 @@ namespace KKT_APP_FA.Units
             // Получение статичных полей ответа от ККТ:
             KKTHighLevel kKTHighLevel = new KKTHighLevel(); // Создаем новый экземпляр KKTHighLevel
 
-            // Пишем статичные поля в лог:
-            //logger.Write();
-
             kKTHighLevel.GetStaticResponseFields(); // и перед стартом главного цикла получаем статичные значения
             kKTHighLevel = null;
+
+            // Пишем статичные поля в лог:
+            logger.Write(KktStaticValues.kktRegistrationReport, "main_log"); 
 
             // Старт потока главного цикла:
             Program.MainTask = Task.Factory.StartNew(() =>
