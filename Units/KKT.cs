@@ -5,6 +5,7 @@ using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
 using KKT_APP_FA.Enums;
+using KKT_APP_FA.Extensions;
 using KKT_APP_FA.Helpers;
 using KKT_APP_FA.Models;
 using KKT_APP_FA.Models.API;
@@ -551,11 +552,12 @@ namespace KKT_APP_FA.Units
 
         //==============================================================================================================================================
         
-        // Получение отчета о регистрации по всем тегам. Занимает время 
+        // Получение отчета о регистрации по всем тегам. Занимает время. Запускается один раз при старте приложения, и пишется сразу в статику, чтоб далее считывать из неё
         public KktRegistrationReport GetKktRegistrationReport()
         {
             byte reportNumber = 0;
             byte maxReportNumber = 50; // максимальный номер отчета, чтоб не зациклилось
+
             // сначала берем гарантированно неверный номер отчета:
             logicLevel.BuildRequestCommand((byte)CommandEnum.GET_REGISTRATION_REPORT, new byte[] { reportNumber });
             var LLResponse = logicLevel.SendRequestCommand();
@@ -579,15 +581,33 @@ namespace KKT_APP_FA.Units
                     }
                 }
             }
+
+            // Далее дополняем отсутствующие в оригинальном отчете поля:
+            //     например, заюзаем GetParameterFromTAG, чтоб получить сайт ОФД:
+            int TAG = 1208; // 1208 - Сайт для получения чека
+            result.OfdSite = GetParameterFromTAG<string>(TAG);
+
             return result;
-            /*
-            byte[] DATA = logicLevel.ConvertToByteArray<int>(reportNumber);
-            logicLevel.BuildRequestCommand((byte)CommandEnum.GET_REGISTRATION_REPORT, DATA);
-            logicLevel.SendRequestCommand();
-            return new KktRegistrationReport(logicLevel);
-            */
         }
-        
+
+        //==============================================================================================================================================
+
+        // Запрос параметра активации ФН по номеру тэга. Нужно знать тип данных тэга
+        public T GetParameterFromTAG<T>(int TAG)
+        {
+            logicLevel = new LogicLevel();
+            byte[] DATA = logicLevel.ConvertToByteArray<short>((short)TAG);
+            logicLevel.BuildRequestCommand((byte)CommandEnum.GET_INFO_FROM_TAG, DATA);
+            logicLevel.SendRequestCommand();
+            if (logicLevel.response.DATA.Length >= 5) // 2 байта TAG, 2 байта LEN
+            {
+                byte[] TLV = logicLevel.response.DATA;
+                byte[] value = TLV.Skip(4).XReverse().ToArray();
+                return logicLevel.ConvertFromByteArray.ToGenericType(value.ToArray(), typeof(T));
+            }
+            else return default(T);
+        }
+
         //==============================================================================================================================================
 
         // 2 - Формирование кассового чека коррекции

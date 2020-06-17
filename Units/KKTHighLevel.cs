@@ -401,7 +401,7 @@ namespace KKT_APP_FA.Units
                                 {
                                     // Всё прошло успешно, можно выдавать инфу чеке:
                                     response.total = CASH + ELECTRONICALLY + PREPAID + CREDIT + OTHER;
-                                    response.fns_site = KktStaticValues.kktRegistrationReport.FnsSite;
+                                    // response.fns_site = KktStaticValues.kktRegistrationReport.FnsSite; // он уже есть в response.kktRegistrationReport
                                     response.fn_number = KktStaticValues.FN;
                                     response.shift_number = response.RegisterCheck.ShiftNumber;
                                     response.receipt_datetime = response.RegisterCheck.CheckDateTime;
@@ -466,7 +466,9 @@ namespace KKT_APP_FA.Units
                 // остальные поля (error_code, error_text, error_type) уже заполнены выше
             }
 
+            response.kktRegistrationReport = KktStaticValues.kktRegistrationReport;
             // доп. свойства для совместимости с оранжем (берем всё со статики):
+            /*
             response.ofd_name = KktStaticValues.kktRegistrationReport.OfdName;
             response.serial_number = KktStaticValues.kktRegistrationReport.KKTManufactureNumber; // серийный номер ККТ
             response.ofd_site = ""; // его нет в ККТ, и при регистрации он не указывается
@@ -480,6 +482,7 @@ namespace KKT_APP_FA.Units
             response.ecr_registration_number = KktStaticValues.KKTRegistrationNumber;
             response.daemon_code = "KKT-APP-" + KktStaticValues.kktRegistrationReport.KKTManufactureNumber;
             response.device_code = KktStaticValues.FirmwareVersion;
+            */
 
             if (response.error) response.error_type = "driver"; // для совместимости с логикой АТОЛ
             return response;
@@ -771,7 +774,7 @@ namespace KKT_APP_FA.Units
                             {
                                 // Всё прошло успешно, можно выдавать инфу о чеке корреции:
                                 response.total = CASH + ELECTRONICALLY + PREPAID + CREDIT + OTHER;
-                                response.fns_site = "nalog.ru";
+                                // response.fns_site = "nalog.ru"; // он уже есть в response.kktRegistrationReport
                                 response.fn_number = KktStaticValues.FN;
                                 response.shift_number = ShiftNumber;
                                 //response.receipt_datetime = response.RegisterCorrectionCheck.CheckDateTime;

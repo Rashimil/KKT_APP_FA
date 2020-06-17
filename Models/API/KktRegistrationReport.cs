@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 namespace KKT_APP_FA.Models.API
 {
     // Отчет о регистрации ККТ (по всем тэгам)
-    public class KktRegistrationReport
+    public class KktRegistrationReport 
     {
         #region request example
         /*
@@ -101,7 +101,7 @@ B6 11
         */
         #endregion
         byte[] TLVs;
-        public DateTimeHelper dateTimeHelper = new DateTimeHelper(Startup.ConfigStatic);
+        public DateTimeHelper dateTimeHelper = new DateTimeHelper(Startup.ConfigStatic); 
         public KktRegistrationReport(LogicLevel logicLevel)
         {
             if (logicLevel.response.DATA.Length > 12) // минимально 
@@ -303,6 +303,10 @@ B6 11
         [Tag(1013)]
         [Description("Заводской номер ККТ")]
         public string KKTManufactureNumber { get; set; }
+
+        [Tag(1208)]
+        [Description("Сайт для получения чека")]
+        public string OfdSite { get; set; } // не входит в обычный отчет, получается отдельно, через метод (0x34) GetParameterFromTAG
     }
 
 }

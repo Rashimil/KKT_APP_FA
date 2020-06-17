@@ -37,6 +37,7 @@
         CANCEL_DOCUMENT = 0x10,
         GET_OFD_INFORMATION_EXCHANGE_STATUS = 0x50, // Запрос статуса информационного обмена с ОФД (0x50) 
         GET_REGISTRATION_REPORT = 0x3B, // отчет о регистрации по всем тэгам
+        GET_INFO_FROM_TAG = 0x34, // Запрос параметра активации ФН по номеру тэга
 
         KKT_RESTART = 0xEF // Перезагрузка ККТ
     }

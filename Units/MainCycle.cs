@@ -139,7 +139,7 @@ namespace KKT_APP_FA.Units
                             payload = new Payload()
                             {
                                 total = (double)FiscalResult.total,
-                                fns_site = FiscalResult.fns_site,
+                                fns_site = FiscalResult.kktRegistrationReport.FnsSite,
                                 fn_number = FiscalResult.fn_number,
                                 shift_number = FiscalResult.shift_number,
                                 receipt_datetime = FiscalResult.receipt_datetime,
@@ -198,6 +198,8 @@ namespace KKT_APP_FA.Units
                     // Заполняем доп. свойства для совместимости с оранжем:
                     if (FiscalResult != null)
                     {
+                        response.kktRegistrationReport = FiscalResult.kktRegistrationReport;
+                        /*
                         response.ofd_name = FiscalResult.ofd_name;
                         response.serial_number = FiscalResult.serial_number; // серийный номер ККТ
                         response.ofd_site = FiscalResult.ofd_site;
@@ -206,6 +208,7 @@ namespace KKT_APP_FA.Units
                         response.sender_email = FiscalResult.sender_email;
                         response.change = FiscalResult.change; // сдача 
                         response.fns_site = FiscalResult.fns_site;
+                        */
                     }
 
 
