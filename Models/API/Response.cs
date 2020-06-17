@@ -15,6 +15,16 @@ namespace KKT_APP_FA.Models.API
         public object body { get; set; } // тело запроса. Варианты: Registration (все 4), Correction (все 2), OpenShift, CloseShift (Классы чеков)
         public string crc { get; set; }
         public string kkt_id { get; set; } // id KKT. Используется при необходимости отправки ответа о статусе ккт и тд (НУЖНО!!!)
+
+
+        // доп. свойства для совместимости с оранжем:
+        public string ofd_name { get; set; }
+        public string serial_number { get; set; } // серийный номер ККТ
+        public string ofd_site { get; set; }
+        public string ofd_inn { get; set; }
+        public string cashier_name { get; set; }
+        public string sender_email { get; set; }
+        public double change { get; set; } // сдача
     }
 
     //=======================================================================================================================================

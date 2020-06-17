@@ -195,6 +195,19 @@ namespace KKT_APP_FA.Units
                         response.error = true;
                     }
 
+                    // Заполняем доп. свойства для совместимости с оранжем:
+                    if (FiscalResult != null)
+                    {
+                        response.ofd_name = FiscalResult.ofd_name;
+                        response.serial_number = FiscalResult.serial_number; // серийный номер ККТ
+                        response.ofd_site = FiscalResult.ofd_site;
+                        response.ofd_inn = FiscalResult.ofd_inn;
+                        response.cashier_name = FiscalResult.cashier_name;
+                        response.sender_email = FiscalResult.sender_email;
+                        response.change = FiscalResult.change; // сдача 
+                    }
+
+
                     // Пишем в БД респонс:
                     sQLiteService.WriteResult(response.group_code, response.operation, response.uuid, response.timestamp, response.body, response);
 
@@ -246,38 +259,38 @@ namespace KKT_APP_FA.Units
         public void CycleMethod(TaskObject TaskObject)
         {
             string SQLiteConnectionString = TaskObject.configuration.GetSection("ConnectionStrings")["LocalDBConnectionString"];
-                RegistrationsContext registration_context = TaskObject.sQLiteService.GetWaitTransaction(); // берём первую транзакцию из БД со статусом wait
-                try
+            RegistrationsContext registration_context = TaskObject.sQLiteService.GetWaitTransaction(); // берём первую транзакцию из БД со статусом wait
+            try
+            {
+                // string request_string = Startup.requestQueue.Dequeue(); // Забираем первый элемент с таблицы, подходящий под условия. К этому моменту контроллер уже должен кинуть входящий запрос в БД
+                // т. е. выбираем только свежие запросы. Несвежие/повторы отсеет AppController                       
+                if (registration_context != null)
                 {
-                    // string request_string = Startup.requestQueue.Dequeue(); // Забираем первый элемент с таблицы, подходящий под условия. К этому моменту контроллер уже должен кинуть входящий запрос в БД
-                    // т. е. выбираем только свежие запросы. Несвежие/повторы отсеет AppController                       
-                    if (registration_context != null)
+                    Request request = new Request()
                     {
-                        Request request = new Request()
-                        {
-                            group_code = registration_context.group_code,
-                            operation = registration_context.operation,
-                            uuid = registration_context.uuid,
-                            timestamp = registration_context.timestamp,
-                            body = JsonConvert.DeserializeObject(registration_context.request_body),
-                            crc = registration_context.crc,
-                            kkt_id = registration_context.kkt_id
-                        };
-                        string incoming_request_string = JsonConvert.SerializeObject(request);
-                        if (incoming_request_string != null && incoming_request_string != "")
-                        {
-                            TaskObject.QueueWork(incoming_request_string); // работаем с элементом
-                        }
-                        registration_context = null; // Task.CompletedTask
+                        group_code = registration_context.group_code,
+                        operation = registration_context.operation,
+                        uuid = registration_context.uuid,
+                        timestamp = registration_context.timestamp,
+                        body = JsonConvert.DeserializeObject(registration_context.request_body),
+                        crc = registration_context.crc,
+                        kkt_id = registration_context.kkt_id
+                    };
+                    string incoming_request_string = JsonConvert.SerializeObject(request);
+                    if (incoming_request_string != null && incoming_request_string != "")
+                    {
+                        TaskObject.QueueWork(incoming_request_string); // работаем с элементом
                     }
+                    registration_context = null; // Task.CompletedTask
                 }
-                catch (Exception ex)
-                {
-                    TaskObject.logger.Write(ex.ToString(), "QueueWork_exception_log");
-                    // Тут надо в БД ставить статус done
-                    registration_context.status = "done(QueueWork_exception)";
-                    TaskObject.sQLiteService.Update<RegistrationsContext>(registration_context, SQLiteConnectionString);
-                }
+            }
+            catch (Exception ex)
+            {
+                TaskObject.logger.Write(ex.ToString(), "QueueWork_exception_log");
+                // Тут надо в БД ставить статус done
+                registration_context.status = "done(QueueWork_exception)";
+                TaskObject.sQLiteService.Update<RegistrationsContext>(registration_context, SQLiteConnectionString);
+            }
         }
 
         //=======================================================================================================================================
@@ -298,7 +311,7 @@ namespace KKT_APP_FA.Units
             kKTHighLevel = null;
 
             // Пишем статичные поля в лог:
-            logger.Write(KktStaticValues.kktRegistrationReport, "main_log"); 
+            logger.Write(KktStaticValues.kktRegistrationReport, "main_log");
 
             // Старт потока главного цикла:
             Program.MainTask = Task.Factory.StartNew(() =>
