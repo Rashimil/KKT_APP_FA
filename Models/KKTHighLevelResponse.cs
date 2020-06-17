@@ -20,7 +20,6 @@ namespace KKT_APP_FA.Models
         //=======================================================================================================================================
         public bool error { get; set; } // общая ошибка. Если true то в каком то из подполей ошибка, ее надо разбирать
         public decimal total { get; set; }
-        public string fns_site { get; set; }
         public string fn_number { get; set; }
         public short shift_number { get; set; }
         public string receipt_datetime { get; set; }
@@ -42,6 +41,7 @@ namespace KKT_APP_FA.Models
         public string cashier_name { get; set; }
         public string sender_email { get; set; }
         public double change { get; set; } // сдача
+        public string fns_site { get; set; }
 
         //=======================================================================================================================================
 

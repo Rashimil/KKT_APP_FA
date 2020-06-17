@@ -25,6 +25,7 @@ namespace KKT_APP_FA.Models.API
         public string cashier_name { get; set; }
         public string sender_email { get; set; }
         public double change { get; set; } // сдача
+        public string fns_site { get; set; } 
     }
 
     //=======================================================================================================================================

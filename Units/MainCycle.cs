@@ -205,6 +205,7 @@ namespace KKT_APP_FA.Units
                         response.cashier_name = FiscalResult.cashier_name;
                         response.sender_email = FiscalResult.sender_email;
                         response.change = FiscalResult.change; // сдача 
+                        response.fns_site = FiscalResult.fns_site;
                     }
 
 

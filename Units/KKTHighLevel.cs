@@ -475,6 +475,12 @@ namespace KKT_APP_FA.Units
             response.sender_email = KktStaticValues.kktRegistrationReport.SenderEmail;
             response.change = 0;  // Сдача. Всегда = 0, т. к. ТерминалФА не поддерживает работу со сдачей
 
+            response.fns_site = KktStaticValues.kktRegistrationReport.FnsSite;
+            response.fn_number = KktStaticValues.FN;
+            response.ecr_registration_number = KktStaticValues.KKTRegistrationNumber;
+            response.daemon_code = "KKT-APP-" + KktStaticValues.kktRegistrationReport.KKTManufactureNumber;
+            response.device_code = KktStaticValues.FirmwareVersion;
+
             if (response.error) response.error_type = "driver"; // для совместимости с логикой АТОЛ
             return response;
         }
