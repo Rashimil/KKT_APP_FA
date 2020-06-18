@@ -101,9 +101,10 @@ B6 11
         */
         #endregion
         byte[] TLVs;
-        public DateTimeHelper dateTimeHelper = new DateTimeHelper(Startup.ConfigStatic); 
+        private DateTimeHelper dateTimeHelper; 
         public KktRegistrationReport(LogicLevel logicLevel)
         {
+            this.dateTimeHelper = new DateTimeHelper(Startup.ConfigStatic);
             if (logicLevel.response.DATA.Length > 12) // минимально 
             {
                 TLVs = logicLevel.response.DATA; // ведь не факт что придет полный TLV а не только VALUE
