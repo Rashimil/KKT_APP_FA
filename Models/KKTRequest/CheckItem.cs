@@ -9,7 +9,7 @@ using KKT_APP_FA.Extensions;
 namespace KKT_APP_FA.Models.KKTRequest
 {
     public class CheckItem
-    {
+    {      
         public CheckItem(
             string Name,
             decimal Price,
@@ -23,6 +23,7 @@ namespace KKT_APP_FA.Models.KKTRequest
             string CustomsDeclarationNumber = "",
             string CountryCode = "",
             string CustomReq = "")
+        // Добавить сюда агентские реквизиты
         {
             // Корректировка null - значений:
             if (string.IsNullOrEmpty(Name))
