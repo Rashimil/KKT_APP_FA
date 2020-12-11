@@ -9,7 +9,7 @@ using KKT_APP_FA.Extensions;
 namespace KKT_APP_FA.Models.KKTRequest
 {
     public class CheckItem
-    {      
+    {
         public CheckItem(
             string Name,
             decimal Price,
@@ -22,18 +22,22 @@ namespace KKT_APP_FA.Models.KKTRequest
             decimal Excise = 0,
             string CustomsDeclarationNumber = "",
             string CountryCode = "",
-            string CustomReq = "")
-        // Добавить сюда агентские реквизиты
+            string CustomReq = "",
+            AgentEnum agentType = AgentEnum.None,
+            API.Agent_info agent_info = null // Атрибуты агента. Обрабатывать только если agentType != None
+            )
         {
+            // Тут надо заполнить Агентские параметры на основании agentType, и вроде всё...
+
             // Корректировка null - значений:
             if (string.IsNullOrEmpty(Name))
-                Name = "Позиция чека"; 
+                Name = "Позиция чека";
             if (string.IsNullOrEmpty(NomenclatureCode))
                 NomenclatureCode = "";
             if (string.IsNullOrEmpty(MeasurementUnit))
-                MeasurementUnit = ""; 
+                MeasurementUnit = "";
             if (string.IsNullOrEmpty(CustomsDeclarationNumber))
-                CustomsDeclarationNumber = ""; 
+                CustomsDeclarationNumber = "";
             if (string.IsNullOrEmpty(CountryCode))
                 CountryCode = "";
             if (string.IsNullOrEmpty(CustomReq))
@@ -97,17 +101,18 @@ namespace KKT_APP_FA.Models.KKTRequest
         public KKTRequestProperty<string> CountryCode { get; set; } // Код страны (тег 1230)
         public KKTRequestProperty<string> CustomReq { get; set; } // Доп. реквизит предмета расчета (тег 1191)
 
-        // Признак агента по предмету расчета
-        // Телефон оператора перевода
-        // Операция платежного агента
-        // Телефон платежного агента
-        // Телефон оператора по приему платежей
-        // Наименование оператора перевода
-        // Адрес оператора перевода
-        // ИНН оператора перевода
-        // Телефон поставщика
-        // Наименование поставщика
-        // ИНН поставщика
+        // Агентские параметры:
+
+        public KKTRequestProperty<byte> AgentInfo { get; set; } // Признак агента по предмету расчета (Тэг 1222)
+        public KKTRequestProperty<string> AgentOperation { get; set; }  // Операция платежного агента (Тэг 1044)
+        public KKTRequestProperty<string> AgentPhone { get; set; } // Телефон платежного агента (Тэг 1073)
+        public KKTRequestProperty<string> PaymentOperatorPhone { get; set; } // Телефон оператора по приему платежей (Тэг 1074)
+        public KKTRequestProperty<string> PaymentOperatorName { get; set; }  // Наименование оператора перевода (Тэг 1026)
+        public KKTRequestProperty<string> PaymentOperatorAdress { get; set; } // Адрес оператора перевода (Тэг 1005)
+        public KKTRequestProperty<string> PaymentOperatorINN { get; set; }  // ИНН оператора перевода (Тэг 1016)
+        public KKTRequestProperty<string> SupplierPhone { get; set; } // Телефон поставщика (Тэг 1171)
+        public KKTRequestProperty<string> SupplierName { get; set; }  // Наименование поставщика (Тэг 1225)
+        public KKTRequestProperty<string> SupplierINN { get; set; } // ИНН поставщика (Тэг 1226)
     }
 
 }

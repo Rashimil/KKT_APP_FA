@@ -25,7 +25,7 @@ namespace KKT_APP_FA.Units
 
         //=======================================================================================================================================
 
-        // РЕГИСТРАЦИЯ ЧЕКА
+        // РЕГИСТРАЦИЯ ЧЕКА (сюда надо добавить работу по агентской схеме)
         public KKTHighLevelResponse Register(Registration body, string operation)
         {
             KKTHighLevelResponse response = new KKTHighLevelResponse();
@@ -333,6 +333,43 @@ namespace KKT_APP_FA.Units
                             paymentObject = PaymentObjectEnum.Commodity; // По умолчанию 1 - Товар (совпадает с API)
                         }
 
+                        // AgentType конвертер:
+                        AgentEnum agentType;
+                        try
+                        {
+                            switch (item.agent_info.type.ToLower())
+                            {
+                                case "bank_paying_agent":
+                                    agentType = AgentEnum.BankPayAgent; // 0x01 - Банковский платежный агент
+                                    break;
+                                case "bank_paying_subagent":
+                                    agentType = AgentEnum.BankPaySubAgent; // 0x02 - Банковский платежный субагент
+                                    break;
+                                case "paying_agent":
+                                    agentType = AgentEnum.PayAgent; // 0x4 - Платежный агент
+                                    break;
+                                case "paying_subagent":
+                                    agentType = AgentEnum.PaySubAgent; // 0x08 - Платежный субагент
+                                    break;
+                                case "attorney":
+                                    agentType = AgentEnum.Attorney; // 0x10 - Поверенный
+                                    break;
+                                case "commission_agent":
+                                    agentType = AgentEnum.ComissionAgent; // 0x20 - Комиссионер
+                                    break;
+                                case "another":
+                                    agentType = AgentEnum.Another; // 0x40 - Прочее
+                                    break;
+                                default:
+                                    agentType = AgentEnum.None; // По умолчанию 0x00 - Отсутствует
+                                    break;
+                            }
+                        }
+                        catch (Exception)
+                        {
+                            agentType = AgentEnum.None; // По умолчанию 0x00 - Отсутствует (не уверен что совпадает с API АТОЛ, надо проверить)
+                        }
+
                         // Составление CheckItem:
                         CheckItem checkItem = new CheckItem(
                             item.name,                  // наименование
@@ -340,15 +377,17 @@ namespace KKT_APP_FA.Units
                             item.quantity,              // количество
                             vat,                        // ставка НДС
                             paymentMethod,              // признак способа расчета (Тэг 1214)
-                            paymentObject,              // признак предмета расчета (Тэг 1212):
+                            paymentObject,              // признак предмета расчета (Тэг 1212):                           
                             "",                         // код довара (КТН)
                             item.measurement_unit,      // единица измерения
                             0,                          // акциз
                             "",                         // номер таможенной декларации
                             "",                         // код страны
-                            ""                          // доп. реквизит
+                            "",                         // доп. реквизит
+                            agentType,                  // признак агента по предмету расчета (Тэг 1222)
+                            item.agent_info             // Атрибуты агента. Необязательно
                             );
-                        var br = kkt.SendCheckPosition(checkItem);
+                        BaseResponse br = kkt.SendCheckPosition(checkItem);
                         response.SendCheckPosition.Add(br);
                         if (br.Result == 0)
                         {
